@@ -18,6 +18,7 @@
   --accent-soft: rgba(24, 26, 71, .08);
   --danger: #b3261e;
   --scrim: rgba(10, 11, 30, .45);
+  --illo-bg: #ffffff; /* the illustrations are ink on white in both themes */
   --font: "Bricolage Grotesque", "Trebuchet MS", system-ui, sans-serif;
   --item: 44px;
   --nav-h: 64px;
@@ -92,6 +93,10 @@ main {
   color: var(--muted); font-size: 28px; font-weight: 700;
 }
 .ph img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.ph.illo { background: var(--illo-bg); }
+.ph.illo img { object-fit: contain; padding: 8%; }
+.hero.ph.illo { aspect-ratio: 3 / 1; }
+.hero.ph.illo img { padding: 4% 6%; }
 .info { padding: 8px 10px 10px; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 .name { font-weight: 600; font-size: 15px; line-height: 1.25; overflow-wrap: anywhere; }
 .w { font-size: 30px; font-weight: 800; line-height: 1.05; font-variant-numeric: tabular-nums; color: var(--accent); letter-spacing: -.02em; }
@@ -376,36 +381,32 @@ main {
 
 <script>
 const GROUPS = ["Pecho", "Espalda", "Hombros", "Bíceps", "Tríceps", "Piernas", "Glúteos", "Abdomen", "Otros"];
-// [id, grupo, nombre, alias para el buscador] — la foto está en img/<id>.jpg
+// [id, grupo, nombre, alias para el buscador] — ilustración en img/<id>.svg y las dos posiciones en img/<id>-2.svg
 const CATALOG = [
   ["press-pecho-maquina","Pecho","Press de pecho en máquina","chest press, empuje"],
-  ["press-inclinado-maquina","Pecho","Press inclinado en máquina","chest press inclinado"],
+  ["press-inclinado-smith","Pecho","Press inclinado en Smith","multipower, pecho inclinado"],
   ["press-banca-barra","Pecho","Press banca con barra","bench press, pecho plano"],
   ["press-banca-mancuernas","Pecho","Press banca con mancuernas","bench press, pecho plano"],
   ["press-inclinado-mancuernas","Pecho","Press inclinado con mancuernas","pecho inclinado"],
   ["press-banca-smith","Pecho","Press banca en Smith","multipower"],
-  ["pec-deck","Pecho","Pec deck (mariposa)","peck deck, contractor, aperturas en máquina"],
   ["aperturas-mancuernas","Pecho","Aperturas con mancuernas","flyes"],
   ["cruce-poleas","Pecho","Cruce de poleas","crossover, cable"],
   ["fondos-pecho","Pecho","Fondos en paralelas","dips"],
   ["jalon-pecho","Espalda","Jalón al pecho","polea alta, dorsales, lat pulldown"],
-  ["jalon-cerrado","Espalda","Jalón agarre cerrado","polea alta, dorsales"],
+  ["jalon-cerrado","Espalda","Jalón agarre cerrado","polea alta, dorsales, triangulo"],
   ["remo-polea-baja","Espalda","Remo en polea baja","remo sentado, gironda"],
-  ["remo-maquina","Espalda","Remo en máquina","remo sentado"],
-  ["remo-alto-maquina","Espalda","Remo alto en máquina","high row"],
+  ["remo-t","Espalda","Remo en T","remo en maquina, t bar"],
   ["remo-barra","Espalda","Remo con barra","remo inclinado"],
   ["remo-mancuerna","Espalda","Remo con mancuerna","serrucho"],
   ["pullover-polea","Espalda","Pullover en polea","brazos rectos"],
   ["dominadas","Espalda","Dominadas","pull ups, barra fija"],
   ["peso-muerto","Espalda","Peso muerto","deadlift"],
   ["hiperextensiones","Espalda","Hiperextensiones","lumbares, banco romano"],
-  ["press-hombros-maquina","Hombros","Press de hombros en máquina","press militar, shoulder press"],
-  ["press-hombros-mancuernas","Hombros","Press de hombros con mancuernas","press militar sentado"],
-  ["press-militar-barra","Hombros","Press militar con barra","press de pie"],
+  ["press-hombros-mancuernas","Hombros","Press de hombros con mancuernas","press militar"],
+  ["press-militar-barra","Hombros","Press militar con barra","press sentado"],
   ["elevaciones-laterales","Hombros","Elevaciones laterales","vuelos laterales, deltoides"],
   ["elevaciones-frontales","Hombros","Elevaciones frontales","vuelos frontales"],
-  ["vuelos-posteriores-maquina","Hombros","Vuelos posteriores en máquina","deltoides posterior, pec deck invertido"],
-  ["face-pull","Hombros","Face pull","soga, polea"],
+  ["vuelos-posteriores","Hombros","Vuelos posteriores","deltoides posterior, pajaros"],
   ["encogimientos","Hombros","Encogimientos","trapecios, shrugs"],
   ["curl-barra","Bíceps","Curl con barra","biceps"],
   ["curl-barra-z","Bíceps","Curl con barra Z","biceps"],
@@ -414,10 +415,11 @@ const CATALOG = [
   ["curl-predicador-maquina","Bíceps","Curl predicador en máquina","scott, banco scott"],
   ["curl-maquina","Bíceps","Curl en máquina","biceps"],
   ["curl-inclinado","Bíceps","Curl inclinado con mancuernas","biceps"],
+  ["curl-polea","Bíceps","Curl en polea","biceps, cable"],
   ["triceps-polea","Tríceps","Tríceps en polea","pushdown, barra"],
   ["triceps-soga","Tríceps","Tríceps con soga","pushdown, cuerda"],
-  ["triceps-tras-nuca-polea","Tríceps","Extensión sobre la cabeza en polea","tras nuca, soga"],
-  ["press-frances","Tríceps","Press francés","rompecráneos, skull crusher"],
+  ["triceps-tras-nuca","Tríceps","Extensión de tríceps tras nuca","sobre la cabeza"],
+  ["press-frances","Tríceps","Press francés","rompecraneos, skull crusher"],
   ["fondos-triceps","Tríceps","Fondos de tríceps","dips"],
   ["triceps-maquina","Tríceps","Extensión de tríceps en máquina","triceps"],
   ["patada-triceps","Tríceps","Patada de tríceps","kickback"],
@@ -431,20 +433,19 @@ const CATALOG = [
   ["peso-muerto-rumano","Piernas","Peso muerto rumano","isquios, rdl"],
   ["estocadas","Piernas","Estocadas","zancadas, lunges"],
   ["gemelos-de-pie","Piernas","Gemelos de pie","pantorrillas, pantorrilla"],
-  ["gemelos-sentado","Piernas","Gemelos sentado","pantorrillas, sóleo"],
+  ["gemelos-sentado","Piernas","Gemelos sentado","pantorrillas, soleo"],
   ["aductores-maquina","Piernas","Aductores en máquina","aductor, cerrar piernas"],
-  ["hip-thrust","Glúteos","Hip thrust","empuje de cadera"],
-  ["puente-gluteos","Glúteos","Puente de glúteos","glute bridge"],
+  ["puente-gluteos","Glúteos","Puente de glúteos","hip thrust, empuje de cadera"],
   ["abductores-maquina","Glúteos","Abductores en máquina","abductor, abrir piernas"],
   ["patada-gluteo-polea","Glúteos","Patada de glúteo en polea","kickback, polea"],
-  ["sentadilla-bulgara","Glúteos","Sentadilla búlgara","split squat, bulgara"],
-  ["crunch-maquina","Abdomen","Crunch en máquina","abdominales"],
+  ["sentadilla-una-pierna","Glúteos","Sentadilla a una pierna","bulgara, split squat"],
   ["crunch-polea","Abdomen","Crunch en polea","abdominales, soga"],
-  ["elevacion-piernas","Abdomen","Elevación de piernas colgado","abdominales, inferiores"],
-  ["plancha","Abdomen","Plancha","plank, isométrico"],
   ["abdominales","Abdomen","Abdominales (crunch)","crunch, encogimientos"],
-  ["pallof","Abdomen","Pallof press","antirrotación, oblicuos"]
-].map(([id, group, name, aliases]) => ({ id, group, name, aliases, img: "img/" + id + ".jpg" }));
+  ["crunch-declinado","Abdomen","Crunch declinado","abdominales, banco declinado"],
+  ["elevacion-piernas","Abdomen","Elevación de piernas","abdominales, inferiores"],
+  ["plancha-lateral","Abdomen","Plancha lateral","plank, oblicuos"],
+  ["rueda-abdominal","Abdomen","Rueda abdominal","ab rollout, rollo"]
+].map(([id, group, name, aliases]) => ({ id, group, name, aliases, img: "img/" + id + ".svg", img2: "img/" + id + "-2.svg", illo: true }));
 const CAT = Object.fromEntries(CATALOG.map(c => [c.id, c]));
 const STEP = 2.5, MAX = 300, ITEM = 44;
 const $ = s => document.querySelector(s);
@@ -474,11 +475,11 @@ const store = { get(k) { try { return localStorage.getItem(k); } catch { return 
 function view(doc) {
   const c = doc.cat ? CAT[doc.cat] : null;
   const own = doc.photo ? "/_blob/" + doc.photo : (doc.photoData || null);
-  return { ...doc, name: c ? c.name : doc.name, group: c ? c.group : (doc.group || "Otros"), img: own || (c ? c.img : null) };
+  return { ...doc, name: c ? c.name : doc.name, group: c ? c.group : (doc.group || "Otros"), img: own || (c ? c.img : null), illo: !own && !!c };
 }
 
-function photoEl(src, name, cls) {
-  const box = h("div", { class: "ph" + (cls ? " " + cls : "") });
+function photoEl(src, name, cls, illo) {
+  const box = h("div", { class: "ph" + (cls ? " " + cls : "") + (illo ? " illo" : "") });
   if (src) {
     const img = h("img", { src, alt: "", loading: "lazy" });
     img.onerror = () => box.replaceChildren(initials(name || "?"));
@@ -511,7 +512,7 @@ function renderPesos() {
       h("div", { class: "group-h" }, h("h2", {}, g), h("span", {}, list.length + (list.length === 1 ? " ejercicio" : " ejercicios"))),
       h("div", { class: "grid" }, list.map(ex =>
         h("button", { class: "card", onclick: () => openSheet(ex) },
-          photoEl(ex.img, ex.name),
+          photoEl(ex.img, ex.name, "", ex.illo),
           h("span", { class: "info" },
             h("span", { class: "name" }, ex.name),
             h("span", { class: "w" }, fmt(ex.weight || 0), h("small", {}, "kg")),
@@ -667,7 +668,7 @@ function renderPicker() {
       const mark = h("span", { class: "mark", "aria-hidden": "true" });
       mark.innerHTML = mine ? CHECK : PLUS;
       list.append(h("button", { class: "row" + (mine ? " added" : ""), onclick: () => { closePicker(); openSheet(mine || null, c); } },
-        photoEl(c.img, c.name),
+        photoEl(c.img, c.name, "", true),
         h("span", {}, h("b", {}, c.name), h("small", {}, mine ? "En tu rutina · " + fmt(mine.weight || 0) + " kg" : c.group)),
         mark));
     }
@@ -746,7 +747,10 @@ function openSheet(ex, cat) {
   $("#sheet-title").textContent = ex ? ex.name : (cat ? cat.name : "Ejercicio propio");
   const hero = $("#hero");
   hero.hidden = custom;
-  if (!custom) hero.replaceChildren(photoEl(ex ? ex.img : cat.img, st.cat.name, "hero"));
+  if (!custom) {
+    const illo = !ex || ex.illo;
+    hero.replaceChildren(photoEl(illo ? st.cat.img2 : ex.img, st.cat.name, "hero", illo));
+  }
   $("#name-in").value = ex && custom ? ex.name : "";
   $("#adj-in").value = ex ? (ex.adjust || "") : "";
   pickGroup(ex ? ex.group : (store.get("lastGroup") || GROUPS[0]));
