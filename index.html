@@ -126,15 +126,20 @@ main {
   padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
   padding-bottom: env(safe-area-inset-bottom, 0px);
 }
-.nav-in { max-width: 720px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; height: var(--nav-h); }
+.nav-in { max-width: 720px; margin: 0 auto; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); height: var(--nav-h); }
 .tab {
   border: 0; background: none; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
-  color: var(--muted); font-size: 12px; font-weight: 600; letter-spacing: .04em;
+  color: var(--muted); font-size: 11px; font-weight: 600; letter-spacing: .03em; position: relative;
+}
+/* Red dot on Entrenar while a workout is running */
+.tab.live .pill::after {
+  content: ""; position: absolute; top: 7px; left: calc(50% + 12px); width: 9px; height: 9px; border-radius: 50%;
+  background: var(--danger); box-shadow: 0 0 0 2px var(--surface);
 }
 .tab svg { width: 24px; height: 24px; }
 .tab[aria-current="page"] { color: var(--accent); }
 .tab[aria-current="page"] .pill { background: var(--accent-soft); }
-.pill { padding: 3px 18px; border-radius: 999px; display: grid; }
+.pill { padding: 3px 14px; border-radius: 999px; display: grid; }
 .fab {
   position: fixed; z-index: 7; width: 60px; height: 60px; border-radius: 18px; border: 0;
   right: max(16px, calc(env(safe-area-inset-right, 0px) + 16px));
@@ -234,6 +239,84 @@ main {
 .row.added .mark { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
 .row.added small { color: var(--accent); font-weight: 600; }
 .custom { margin-top: 18px; }
+#picker { z-index: 23; }
+#picker.selecting .plist { padding-bottom: 84px; }
+.pick-foot {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 24; background: var(--surface); border-top: 1px solid var(--line);
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 12px calc(12px + env(safe-area-inset-bottom, 0px));
+}
+.pick-foot .btn { width: 100%; max-width: 560px; margin: 0 auto; display: block; }
+
+/* Routines */
+.section-h { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 22px 0 12px; }
+.section-h h2 { margin: 0; font-size: 20px; font-weight: 700; }
+.rlist { display: flex; flex-direction: column; gap: 12px; }
+.rcard { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 14px; display: flex; flex-direction: column; gap: 12px; }
+.rcard h3 { margin: 0 0 2px; font-size: 21px; font-weight: 800; letter-spacing: -.01em; overflow-wrap: anywhere; }
+.meta { color: var(--muted); font-size: 13px; margin: 0; }
+.strip { display: flex; gap: 6px; overflow: hidden; }
+.strip .ph, .strip .more-n { width: 58px; flex: none; border-radius: 8px; font-size: 14px; }
+.strip .more-n { aspect-ratio: 4 / 3; background: var(--surface-2); display: grid; place-items: center; color: var(--muted); font-weight: 700; }
+.rrow { display: grid; grid-template-columns: 58px minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--line); }
+.rrow .ph { border-radius: 8px; font-size: 14px; }
+.rrow b { display: block; font-weight: 600; font-size: 15px; line-height: 1.25; overflow-wrap: anywhere; }
+.rrow small { color: var(--muted); font-size: 13px; }
+.ord { display: flex; gap: 4px; }
+.ord button { width: 36px; height: 36px; border-radius: 10px; border: 0; background: var(--surface-2); display: grid; place-items: center; color: var(--fg); }
+.ord button:disabled { opacity: .35; }
+.ord svg { width: 18px; height: 18px; }
+
+/* Workout session */
+.ses-top { margin-top: 18px; display: flex; flex-direction: column; gap: 8px; }
+.ses-top .meta { font-size: 14px; font-weight: 600; color: var(--fg); }
+.sbar { height: 8px; border-radius: 8px; background: var(--surface-2); overflow: hidden; }
+.sbar i { display: block; height: 100%; background: var(--accent); border-radius: 8px; transition: width .2s; }
+.slist { display: flex; flex-direction: column; }
+.srow { display: grid; grid-template-columns: minmax(0, 1fr) 52px; align-items: center; gap: 8px; border-bottom: 1px solid var(--line); }
+.sbody { display: grid; grid-template-columns: 72px minmax(0, 1fr); gap: 12px; align-items: center; text-align: left; border: 0; background: none; padding: 10px 0; min-width: 0; }
+.sbody .ph { border-radius: 10px; font-size: 16px; }
+.sbody b { display: block; font-weight: 600; font-size: 16px; line-height: 1.25; overflow-wrap: anywhere; }
+.sbody small { color: var(--muted); font-size: 14px; font-variant-numeric: tabular-nums; }
+.check { width: 48px; height: 48px; border-radius: 50%; border: 2px solid var(--line); background: none; display: grid; place-items: center; color: transparent; }
+.check svg { width: 24px; height: 24px; }
+.srow.done .check { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+.srow.done b { color: var(--muted); }
+.srow.done small { color: var(--accent); font-weight: 600; }
+.wide { width: 100%; margin-top: 14px; }
+
+/* Calendar */
+.cal-card { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 12px; margin-top: 14px; }
+.cal-h { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+.cal-h b { font-size: 18px; font-weight: 700; }
+.cal-h b::first-letter { text-transform: uppercase; }
+.cal-h button:disabled { opacity: .35; }
+.cal { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; }
+.wd { text-align: center; font-size: 11px; font-weight: 600; color: var(--muted); padding-block: 4px; }
+.day {
+  aspect-ratio: 1; border: 0; border-radius: 10px; background: none; display: grid; place-items: center; min-width: 0;
+  font-size: 15px; font-variant-numeric: tabular-nums; color: var(--fg); padding: 0;
+}
+.day.out { visibility: hidden; }
+.day.lv1 { background: color-mix(in srgb, var(--accent) 28%, transparent); }
+.day.lv2 { background: color-mix(in srgb, var(--accent) 62%, transparent); color: var(--on-accent); font-weight: 600; }
+.day.lv3 { background: var(--accent); color: var(--on-accent); font-weight: 700; }
+.day.today { box-shadow: inset 0 0 0 2px var(--accent); }
+.day.sel { outline: 2px solid var(--fg); outline-offset: 1px; }
+.legend { display: flex; align-items: center; gap: 6px; justify-content: flex-end; flex-wrap: wrap; font-size: 12px; color: var(--muted); margin-top: 10px; }
+.legend i { width: 14px; height: 14px; border-radius: 4px; display: inline-block; }
+.day-h { margin: 22px 0 10px; font-size: 18px; font-weight: 700; }
+.day-h::first-letter { text-transform: uppercase; }
+.dlist { display: flex; flex-direction: column; gap: 10px; }
+.scard { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; }
+.scard-h { display: flex; justify-content: space-between; gap: 10px; align-items: baseline; }
+.scard-h b { font-size: 16px; overflow-wrap: anywhere; }
+.scard-h span { color: var(--muted); font-size: 13px; white-space: nowrap; }
+.scard ul { margin: 8px 0 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 4px; font-size: 14px; }
+.scard li { display: flex; justify-content: space-between; gap: 10px; }
+.scard li span:first-child { overflow-wrap: anywhere; min-width: 0; }
+.scard li span:last-child { font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.scard .link { margin-top: 10px; font-size: 13px; color: var(--muted); }
 
 /* Progress */
 .prog { display: flex; flex-direction: column; gap: 14px; margin-top: 18px; }
@@ -288,6 +371,8 @@ label.btn { text-align: center; cursor: pointer; }
 <main>
   <p class="note" id="note" hidden></p>
   <section id="view-pesos"></section>
+  <section id="view-train" hidden></section>
+  <section id="view-cal" hidden></section>
   <section id="view-prog" hidden></section>
 </main>
 
@@ -300,6 +385,14 @@ label.btn { text-align: center; cursor: pointer; }
     <button class="tab" id="tab-pesos" aria-current="page">
       <span class="pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6.5 6.5v11M17.5 6.5v11M3.5 9v6M20.5 9v6M6.5 12h11"/></svg></span>
       Pesos
+    </button>
+    <button class="tab" id="tab-train">
+      <span class="pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13.5" r="7.5"/><path d="M12 9.5v4l2.5 2M10 2.5h4"/></svg></span>
+      Entrenar
+    </button>
+    <button class="tab" id="tab-cal">
+      <span class="pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15.5" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg></span>
+      Calendario
     </button>
     <button class="tab" id="tab-prog">
       <span class="pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19h16M5 15l4-4 3 3 7-7"/></svg></span>
@@ -328,6 +421,40 @@ label.btn { text-align: center; cursor: pointer; }
     </div>
     <div class="plist" id="plist"></div>
     <button class="more custom" id="custom">¿No está? Crear un ejercicio propio</button>
+  </div>
+  <div class="pick-foot" id="pick-foot" hidden><button class="btn btn-main" id="pick-done">Listo</button></div>
+</section>
+
+<section class="sheet" id="rsheet" role="dialog" aria-modal="true" aria-labelledby="rsheet-title" hidden>
+  <div class="sheet-in">
+    <div class="grab"></div>
+    <div class="sheet-h">
+      <h2 id="rsheet-title">Nueva rutina</h2>
+      <button class="icon-btn" id="rclose" aria-label="Cerrar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+    </div>
+    <div>
+      <label class="lbl" for="rname">Nombre</label>
+      <input class="field" id="rname" maxlength="40" placeholder="Ej: Día A · Pecho y tríceps" autocomplete="off">
+    </div>
+    <div>
+      <span class="lbl">Ejercicios, en el orden en que los hacés</span>
+      <div id="ritems"></div>
+    </div>
+    <button class="more" id="radd">Agregar o sacar ejercicios</button>
+    <p class="err" id="rerr" hidden></p>
+    <div class="confirm" id="rconfirm" hidden>
+      <p id="rconfirm-txt"></p>
+      <div class="acts">
+        <button class="btn btn-ghost" id="rconfirm-no">Cancelar</button>
+        <button class="btn btn-del" id="rconfirm-yes">Borrar</button>
+      </div>
+    </div>
+    <div class="acts" id="racts">
+      <button class="btn btn-danger" id="rdel" hidden>Borrar</button>
+      <button class="btn btn-main" id="rsave">Guardar rutina</button>
+    </div>
   </div>
 </section>
 
@@ -480,12 +607,17 @@ const CAT = Object.fromEntries(CATALOG.map(c => [c.id, c]));
 const STEP = 2.5, MAX = 300, ITEM = 44;
 const $ = s => document.querySelector(s);
 
-let exercises = [], loaded = false, hasDb = true;
-const st = { view: "pesos", editing: null, cat: null, weight: 0, group: GROUPS[0], photoFile: null, photoUrl: null, removePhoto: false, chartId: null, pickGroup: "Todos" };
+let exercises = [], routines = [], sessions = [], loaded = false, hasDb = true;
+const st = {
+  view: "pesos", editing: null, cat: null, weight: 0, group: GROUPS[0], photoFile: null, photoUrl: null, removePhoto: false,
+  chartId: null, pickGroup: "Todos", pick: { mode: "add", sel: [], onDone: null }, rdraft: null, sessionKey: null,
+  ending: false, calMonth: null, calSel: null
+};
 
 function h(tag, attrs, ...kids) {
   const el = document.createElement(tag);
   for (const [k, v] of Object.entries(attrs || {})) {
+    if (v == null) continue;
     if (k === "class") el.className = v;
     else if (k.startsWith("on")) el.addEventListener(k.slice(2), v);
     else el.setAttribute(k, v);
@@ -499,12 +631,24 @@ const fmtDate = d => new Date(d + "T12:00:00").toLocaleDateString("es-AR", { day
 const initials = n => n.split(/\s+/).filter(Boolean).slice(0, 2).map(w => w[0].toUpperCase()).join("");
 const norm = s => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
 const store = { get(k) { try { return localStorage.getItem(k); } catch { return null; } }, set(k, v) { try { localStorage.setItem(k, v); } catch {} } };
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+const dayKey = ts => new Date(ts).toLocaleDateString("en-CA");
+const dur = ms => { const m = Math.max(1, Math.round(ms / 60000)); return m < 60 ? m + " min" : Math.floor(m / 60) + " h " + String(m % 60).padStart(2, "0"); };
+const plural = (n, one, many) => n + " " + (n === 1 ? one : many);
 
 // A saved exercise merged with its catalog entry (custom ones keep their own name, group and photo)
 function view(doc) {
   const c = doc.cat ? CAT[doc.cat] : null;
   const own = doc.photoData || null;
   return { ...doc, name: c ? c.name : doc.name, group: c ? c.group : (doc.group || "Otros"), img: own || (c ? c.img : null), illo: !own && !!c };
+}
+
+// Routines and workouts point at an exercise key: a catalog id (maybe not added yet) or a custom exercise id
+function itemInfo(key) {
+  const ex = exercises.find(e => e.id === key);
+  if (ex) return { key, name: ex.name, group: ex.group, img: ex.img, illo: ex.illo, ex };
+  const c = CAT[key];
+  return c ? { key, name: c.name, group: c.group, img: c.img, illo: true, ex: null } : null;
 }
 
 function photoEl(src, name, cls, illo) {
@@ -528,10 +672,10 @@ function renderPesos() {
   if (!loaded) { root.append(h("div", { class: "empty" }, "Cargando tus ejercicios…")); return; }
   if (!exercises.length) {
     root.append(h("div", { class: "empty" },
-      h("b", {}, "Armá tu rutina"),
-      hasDb ? "Elegí los ejercicios que hacés de la lista y anotá el peso de cada uno." : "",
+      h("b", {}, "Armá tu lista"),
+      hasDb ? "Elegí los ejercicios que hacés y anotá el peso de cada uno." : "",
       hasDb ? h("br") : null,
-      hasDb ? h("button", { class: "btn btn-main", onclick: openPicker }, "Elegir ejercicios") : null));
+      hasDb ? h("button", { class: "btn btn-main", onclick: () => openPicker("add") }, "Elegir ejercicios") : null));
     if (hasDb) root.append(backupEl());
     return;
   }
@@ -554,10 +698,216 @@ function renderPesos() {
 function backupEl() {
   return h("section", { class: "backup" },
     h("h2", {}, "Copia de seguridad"),
-    h("p", {}, "Tus pesos se guardan solo en este celular. Bajá una copia de vez en cuando para no perderlos si cambiás de teléfono o borrás los datos del navegador."),
+    h("p", {}, "Tus pesos, rutinas y entrenamientos se guardan solo en este celular. Bajá una copia de vez en cuando para no perderlos si cambiás de teléfono o borrás los datos del navegador."),
     h("div", { class: "acts" },
       h("button", { class: "btn btn-ghost", onclick: exportData }, "Exportar copia"),
       h("label", { class: "btn btn-ghost", for: "import-in" }, "Importar copia")));
+}
+
+/* ---------- Entrenar view: routines, or the running workout ---------- */
+const UP = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 15l6-6 6 6"/></svg>';
+const DOWN = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>';
+const XMARK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M7 7l10 10M17 7L7 17"/></svg>';
+const PREV = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg>';
+const NEXT = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>';
+const icon = (svg, attrs) => { const b = h("button", attrs); b.innerHTML = svg; return b; };
+
+function activeSession() { return sessions.find(s => !s.end) || null; }
+
+function renderTrain() {
+  const root = $("#view-train");
+  root.replaceChildren();
+  if (!loaded) return;
+  const ses = activeSession();
+  if (ses) { renderSession(root, ses); return; }
+  if (!routines.length) {
+    root.append(h("div", { class: "empty" },
+      h("b", {}, "Armá tu primera rutina"),
+      "Juntá los ejercicios de cada día, por ejemplo «Día A · Pecho y tríceps», y empezá a entrenar con un toque.",
+      h("br"),
+      h("button", { class: "btn btn-main", onclick: () => openRoutine(null) }, "Crear rutina"),
+      h("br"),
+      h("button", { class: "link", style: "margin-top:18px", onclick: () => startSession(null) }, "Entrenar sin rutina")));
+    return;
+  }
+  root.append(h("div", { class: "section-h" },
+    h("h2", {}, "Tus rutinas"),
+    h("button", { class: "link", onclick: () => startSession(null) }, "Entrenar sin rutina")));
+  root.append(h("div", { class: "rlist" }, routines.map(r => {
+    const its = r.items.map(itemInfo).filter(Boolean);
+    const groups = [...new Set(its.map(i => i.group))].join(", ");
+    const last = sessions.filter(s => s.routine === r.id && s.end).sort((a, b) => b.start - a.start)[0];
+    return h("article", { class: "rcard" },
+      h("div", {},
+        h("h3", {}, r.name),
+        h("p", { class: "meta" }, plural(its.length, "ejercicio", "ejercicios") + (groups ? " · " + groups : "") + (last ? " · última vez " + fmtDate(last.date) : ""))),
+      h("div", { class: "strip" },
+        its.slice(0, 5).map(i => photoEl(i.img, i.name, "", i.illo)),
+        its.length > 5 ? h("div", { class: "more-n" }, "+" + (its.length - 5)) : null),
+      h("div", { class: "acts" },
+        h("button", { class: "btn btn-ghost", style: "flex:0 0 auto;padding-inline:18px", onclick: () => openRoutine(r) }, "Editar"),
+        h("button", { class: "btn btn-main", onclick: () => startSession(r) }, "Empezar")));
+  })));
+}
+
+function startSession(r) {
+  if (activeSession()) { go("train"); return; }
+  const now = Date.now();
+  mutate(db => {
+    db.sessions["s" + uid()] = {
+      start: now, end: null, date: dayKey(now), routine: r ? r.id : null,
+      name: r ? r.name : "Entrenamiento libre", items: r ? r.items.filter(k => itemInfo(k)) : [], done: {}
+    };
+  });
+  st.ending = false;
+  go("train");
+}
+
+// If the workout was left open, close it a few minutes after the last exercise instead of hours later
+function endTime(ses) {
+  const last = Math.max(ses.start, ...Object.values(ses.done).map(d => d.t));
+  return Date.now() - last > 3600e3 ? last + 5 * 60e3 : Date.now();
+}
+
+function renderSession(root, ses) {
+  const items = ses.items.map(itemInfo).filter(Boolean);
+  const nDone = items.filter(i => ses.done[i.key]).length;
+  const pct = items.length ? Math.round(nDone / items.length * 100) : 0;
+  if (Date.now() - Math.max(ses.start, ...Object.values(ses.done).map(d => d.t)) > 3 * 3600e3) {
+    root.append(h("p", { class: "note" }, "Este entrenamiento quedó abierto desde el " + fmtDate(ses.date) + ". Terminalo para que se guarde en el calendario."));
+  }
+  root.append(h("div", { class: "ses-top" },
+    h("p", { class: "meta" }, items.length ? nDone + " de " + plural(items.length, "ejercicio hecho", "ejercicios hechos") : "Agregá los ejercicios que vas haciendo"),
+    h("div", { class: "sbar" }, h("i", { style: "width:" + pct + "%" }))));
+  const list = h("div", { class: "slist" });
+  for (const it of items) {
+    const d = ses.done[it.key];
+    const w = d ? d.w : it.ex ? it.ex.weight : null;
+    const sub = d ? "Hecho · " + fmt(d.w) + " kg"
+      : w != null ? fmt(w) + " kg" + (it.ex.adjust ? " · " + it.ex.adjust : "")
+      : "Tocá para poner el peso";
+    const chk = icon(CHECK, { class: "check", "aria-label": d ? "Desmarcar " + it.name : "Marcar " + it.name + " como hecho", onclick: () => toggleDone(ses, it) });
+    list.append(h("div", { class: "srow" + (d ? " done" : "") },
+      h("button", { class: "sbody", onclick: () => openSheet(it.ex, it.ex ? null : CAT[it.key], it.key) },
+        photoEl(it.img, it.name, "", it.illo),
+        h("span", {}, h("b", {}, it.name), h("small", {}, sub))),
+      chk));
+  }
+  root.append(list, h("button", { class: "more wide", onclick: () => openPicker("select", ses.items, sel => mutate(db => {
+    const s = db.sessions[ses.id];
+    s.items = [...s.items.filter(k => sel.includes(k) || s.done[k]), ...sel.filter(k => !s.items.includes(k))];
+  })) }, "Agregar o sacar ejercicios"));
+  if (st.ending) {
+    root.append(h("div", { class: "confirm", style: "margin-top:16px" },
+      h("p", {}, nDone
+        ? "¿Terminar? Hiciste " + plural(nDone, "ejercicio", "ejercicios") + " en " + dur(endTime(ses) - ses.start) + "."
+        : "No marcaste ningún ejercicio. Si terminás ahora, este entrenamiento no se guarda."),
+      h("div", { class: "acts" },
+        h("button", { class: "btn btn-ghost", onclick: () => { st.ending = false; render(); } }, "Seguir"),
+        h("button", { class: "btn btn-main", onclick: () => endSession(ses, nDone) }, nDone ? "Terminar" : "Descartar"))));
+  } else {
+    root.append(h("div", { class: "acts", style: "margin-top:20px" },
+      h("button", { class: "btn btn-main", onclick: () => { st.ending = true; render(); } }, "Terminar entrenamiento")));
+  }
+}
+
+function toggleDone(ses, it) {
+  if (ses.done[it.key]) { mutate(db => { delete db.sessions[ses.id].done[it.key]; }); return; }
+  if (!it.ex) { openSheet(null, CAT[it.key], it.key); return; }
+  markDone(it.key, it.ex.weight || 0, it.name);
+}
+function markDone(key, w, name) {
+  const ses = activeSession();
+  if (ses) mutate(db => { db.sessions[ses.id].done[key] = { w, t: Date.now(), n: name }; });
+}
+function endSession(ses, nDone) {
+  st.ending = false;
+  if (!nDone) {
+    mutate(db => { delete db.sessions[ses.id]; });
+    toast("Entrenamiento descartado");
+    return;
+  }
+  const end = endTime(ses);
+  mutate(db => { db.sessions[ses.id].end = end; });
+  st.calSel = ses.date; st.calMonth = ses.date.slice(0, 7);
+  toast("Guardado · " + dur(end - ses.start));
+  go("cal");
+}
+
+/* ---------- Calendario view ---------- */
+const mondayOf = date => { const d = new Date(date + "T12:00:00"); d.setDate(d.getDate() - (d.getDay() + 6) % 7); return dayKey(d); };
+function weekStreak(done) {
+  const weeks = new Set(done.map(s => mondayOf(s.date)));
+  const d = new Date(mondayOf(today()) + "T12:00:00");
+  if (!weeks.has(dayKey(d))) d.setDate(d.getDate() - 7); // this week still counts as "in progress"
+  let n = 0;
+  while (weeks.has(dayKey(d))) { n++; d.setDate(d.getDate() - 7); }
+  return n;
+}
+
+function renderCal() {
+  const root = $("#view-cal");
+  root.replaceChildren();
+  const done = sessions.filter(s => s.end).sort((a, b) => b.start - a.start);
+  if (!done.length) {
+    root.append(h("div", { class: "empty" }, h("b", {}, "Sin entrenamientos todavía"), "Cuando termines un entrenamiento desde Entrenar, aparece acá."));
+    return;
+  }
+  const byDay = {};
+  for (const s of done) (byDay[s.date] ||= []).push(s);
+  if (!st.calSel) st.calSel = byDay[today()] ? today() : done[0].date;
+  if (!st.calMonth) st.calMonth = st.calSel.slice(0, 7);
+  const [Y, M] = st.calMonth.split("-").map(Number);
+  const inMonth = done.filter(s => s.date.startsWith(st.calMonth));
+  const ms = inMonth.reduce((a, s) => a + (s.end - s.start), 0);
+  const streak = weekStreak(done);
+
+  root.append(h("div", { class: "stats", style: "margin-top:18px" },
+    h("div", { class: "stat" }, h("span", {}, "Entrenos"), h("b", {}, String(inMonth.length))),
+    h("div", { class: "stat" }, h("span", {}, "Tiempo"), h("b", {}, ms ? dur(ms) : "–")),
+    h("div", { class: "stat" }, h("span", {}, "Racha"), h("b", {}, String(streak)), streak === 1 ? " semana" : " semanas")));
+
+  const shift = d => { const t = new Date(Y, M - 1 + d, 1); st.calMonth = t.getFullYear() + "-" + String(t.getMonth() + 1).padStart(2, "0"); renderCal(); };
+  const isCurrent = st.calMonth >= today().slice(0, 7);
+  const grid = h("div", { class: "cal" }, ["L", "M", "M", "J", "V", "S", "D"].map(d => h("span", { class: "wd", "aria-hidden": "true" }, d)));
+  const offset = (new Date(Y, M - 1, 1).getDay() + 6) % 7;
+  for (let i = 0; i < offset; i++) grid.append(h("span", { class: "day out" }));
+  const days = new Date(Y, M, 0).getDate();
+  for (let d = 1; d <= days; d++) {
+    const key = st.calMonth + "-" + String(d).padStart(2, "0");
+    const list = byDay[key] || [];
+    const mins = list.reduce((a, s) => a + (s.end - s.start), 0) / 60000;
+    const lv = !list.length ? 0 : mins < 30 ? 1 : mins < 60 ? 2 : 3;
+    const label = d + (list.length ? ": " + plural(list.length, "entrenamiento", "entrenamientos") + ", " + dur(mins * 60000) : ": sin entrenar");
+    grid.append(h("button", {
+      class: "day" + (lv ? " lv" + lv : "") + (key === today() ? " today" : "") + (key === st.calSel ? " sel" : ""),
+      "aria-label": label, onclick: () => { st.calSel = key; renderCal(); }
+    }, String(d)));
+  }
+  const monthName = new Date(Y, M - 1, 1).toLocaleDateString("es-AR", { month: "long", year: "numeric" });
+  const nextBtn = icon(NEXT, { class: "icon-btn", "aria-label": "Mes siguiente", onclick: () => shift(1) });
+  nextBtn.disabled = isCurrent;
+  root.append(h("div", { class: "cal-card" },
+    h("div", { class: "cal-h" }, icon(PREV, { class: "icon-btn", "aria-label": "Mes anterior", onclick: () => shift(-1) }), h("b", {}, monthName), nextBtn),
+    grid,
+    h("div", { class: "legend" },
+      h("i", { style: "background:color-mix(in srgb, var(--accent) 28%, transparent)" }), "menos de 30 min",
+      h("i", { style: "background:color-mix(in srgb, var(--accent) 62%, transparent);margin-left:6px" }), "30–60",
+      h("i", { style: "background:var(--accent);margin-left:6px" }), "más de 1 h")));
+
+  const selLong = new Date(st.calSel + "T12:00:00").toLocaleDateString("es-AR", { weekday: "long", day: "numeric", month: "long" });
+  root.append(h("h2", { class: "day-h" }, selLong));
+  const daySes = (byDay[st.calSel] || []).slice().sort((a, b) => a.start - b.start);
+  if (!daySes.length) { root.append(h("p", { class: "meta" }, "Este día no entrenaste.")); return; }
+  root.append(h("div", { class: "dlist" }, daySes.map(s => {
+    const time = new Date(s.start).toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit" });
+    const rows = Object.entries(s.done).sort((a, b) => a[1].t - b[1].t)
+      .map(([k, d]) => h("li", {}, h("span", {}, itemInfo(k)?.name || d.n || "Ejercicio"), h("span", {}, fmt(d.w) + " kg")));
+    return h("article", { class: "scard" },
+      h("div", { class: "scard-h" }, h("b", {}, s.name), h("span", {}, time + " · " + dur(s.end - s.start))),
+      h("ul", {}, rows),
+      h("button", { class: "link", onclick: () => { if (confirm("¿Borrar este entrenamiento del calendario?")) mutate(db => { delete db.sessions[s.id]; }); } }, "Borrar entrenamiento"));
+  })));
 }
 
 /* ---------- Progreso view ---------- */
@@ -660,22 +1010,34 @@ function drawChart(box, pts) {
 }
 
 /* ---------- Shell ---------- */
+const VIEWS = ["pesos", "train", "cal", "prog"];
+const TITLES = { pesos: "Pesos", train: "Entrenar", cal: "Calendario", prog: "Progreso" };
+function subText() {
+  const ses = activeSession();
+  if (st.view === "train" && ses) return dur(Date.now() - ses.start);
+  if (st.view === "pesos" && loaded && exercises.length) return plural(exercises.length, "ejercicio", "ejercicios");
+  return "";
+}
 function render() {
-  const n = exercises.length;
-  $("#title").textContent = st.view === "pesos" ? "Pesos" : "Progreso";
-  $("#sub").textContent = loaded && n ? n + (n === 1 ? " ejercicio" : " ejercicios") : "";
-  $("#view-pesos").hidden = st.view !== "pesos";
-  $("#view-prog").hidden = st.view !== "prog";
-  $("#tab-pesos").toggleAttribute("aria-current", st.view === "pesos");
-  $("#tab-prog").toggleAttribute("aria-current", st.view === "prog");
-  if (st.view === "pesos") { $("#tab-pesos").setAttribute("aria-current", "page"); renderPesos(); }
-  else { $("#tab-prog").setAttribute("aria-current", "page"); renderProg(); }
-  $("#fab").hidden = !(hasDb && loaded && st.view === "pesos");
+  const ses = activeSession();
+  $("#title").textContent = st.view === "train" && ses ? ses.name : TITLES[st.view];
+  $("#sub").textContent = subText();
+  for (const v of VIEWS) {
+    $("#view-" + v).hidden = st.view !== v;
+    if (st.view === v) $("#tab-" + v).setAttribute("aria-current", "page");
+    else $("#tab-" + v).removeAttribute("aria-current");
+  }
+  $("#tab-train").classList.toggle("live", !!ses);
+  ({ pesos: renderPesos, train: renderTrain, cal: renderCal, prog: renderProg })[st.view]();
+  const fab = st.view === "pesos" || (st.view === "train" && !ses && routines.length > 0);
+  $("#fab").hidden = !(hasDb && loaded && fab);
+  $("#fab").setAttribute("aria-label", st.view === "pesos" ? "Agregar ejercicio" : "Nueva rutina");
   if (!$("#picker").hidden) renderPicker();
+  if (!$("#rsheet").hidden) renderRItems();
 }
 function go(v) { st.view = v; store.set("view", v); window.scrollTo(0, 0); render(); }
-$("#tab-pesos").onclick = () => go("pesos");
-$("#tab-prog").onclick = () => go("prog");
+VIEWS.forEach(v => { $("#tab-" + v).onclick = () => go(v); });
+setInterval(() => { if (st.view === "train" && activeSession()) $("#sub").textContent = subText(); }, 15000);
 let rzT;
 window.addEventListener("resize", () => { clearTimeout(rzT); rzT = setTimeout(() => st.view === "prog" && renderProg(), 150); });
 
@@ -685,14 +1047,19 @@ const pickGroups = $("#pick-groups");
 const CHECK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
 const PLUS = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 6v12M6 12h12"/></svg>';
 
+// mode "add": tap adds one exercise to your list. mode "select": tap toggles, "Listo" hands back the keys.
 function renderPicker() {
+  const select = st.pick.mode === "select";
   pickGroups.querySelectorAll(".chip").forEach(c => c.setAttribute("aria-pressed", c.dataset.g === st.pickGroup));
   const q = norm($("#q").value.trim());
   const terms = q.split(/\s+/).filter(Boolean);
-  const byCat = Object.fromEntries(exercises.filter(e => e.cat).map(e => [e.cat, e]));
-  const hits = CATALOG.filter(c =>
+  const mineById = Object.fromEntries(exercises.map(e => [e.id, e]));
+  const customs = exercises.filter(e => !e.cat).map(e => ({ id: e.id, group: e.group, name: e.name, aliases: "", img: e.img, illo: false }));
+  const pool = select ? [...customs, ...CATALOG] : CATALOG;
+  const hits = pool.filter(c =>
     (st.pickGroup === "Todos" || c.group === st.pickGroup) &&
     terms.every(t => norm(c.name + " " + c.group + " " + c.aliases).includes(t)));
+  $("#pick-done").textContent = st.pick.sel.length ? "Listo · " + plural(st.pick.sel.length, "ejercicio", "ejercicios") : "Listo";
   const list = $("#plist");
   list.replaceChildren();
   if (!hits.length) {
@@ -704,30 +1071,117 @@ function renderPicker() {
     if (!rows.length) continue;
     if (st.pickGroup === "Todos") list.append(h("h3", {}, g));
     for (const c of rows) {
-      const mine = byCat[c.id];
+      const mine = mineById[c.id];
+      const on = select ? st.pick.sel.includes(c.id) : !!mine;
       const mark = h("span", { class: "mark", "aria-hidden": "true" });
-      mark.innerHTML = mine ? CHECK : PLUS;
-      list.append(h("button", { class: "row" + (mine ? " added" : ""), onclick: () => { closePicker(); openSheet(mine || null, c); } },
-        photoEl(c.img, c.name, "", true),
-        h("span", {}, h("b", {}, c.name), h("small", {}, mine ? "En tu rutina · " + fmt(mine.weight || 0) + " kg" : c.group)),
+      mark.innerHTML = on ? CHECK : PLUS;
+      const sub = mine ? (select ? fmt(mine.weight || 0) + " kg" : "En tus ejercicios · " + fmt(mine.weight || 0) + " kg") : c.group;
+      list.append(h("button", {
+        class: "row" + (on ? " added" : ""), "aria-pressed": select ? String(on) : null,
+        onclick: select ? () => togglePick(c.id) : () => { closePicker(); openSheet(mine || null, c); }
+      },
+        photoEl(c.img, c.name, "", c.illo !== false),
+        h("span", {}, h("b", {}, c.name), h("small", {}, sub)),
         mark));
     }
   }
 }
-function openPicker() {
+function togglePick(id) {
+  const sel = st.pick.sel, i = sel.indexOf(id);
+  if (i >= 0) sel.splice(i, 1); else sel.push(id);
+  renderPicker();
+}
+function openPicker(mode = "add", preselected = [], onDone = null) {
+  st.pick = { mode, sel: [...preselected], onDone };
+  const select = mode === "select";
+  $("#picker-title").textContent = select ? "Elegí ejercicios" : "Elegí un ejercicio";
+  $("#custom").hidden = select;
+  $("#pick-foot").hidden = !select;
+  $("#picker").classList.toggle("selecting", select);
   $("#q").value = "";
   renderPicker();
   $("#picker").scrollTop = 0;
   $("#scrim").hidden = false; $("#picker").hidden = false;
   document.body.classList.add("locked");
 }
-function closePicker() {
-  $("#picker").hidden = true;
-  if ($("#sheet").hidden) { $("#scrim").hidden = true; document.body.classList.remove("locked"); }
+// Hide the scrim only when no panel is left open
+function afterClose() {
+  if ($("#picker").hidden && $("#sheet").hidden && $("#rsheet").hidden) {
+    $("#scrim").hidden = true; document.body.classList.remove("locked");
+  }
 }
+function closePicker() { $("#picker").hidden = true; afterClose(); }
 $("#q").addEventListener("input", renderPicker);
 $("#picker-close").onclick = closePicker;
 $("#custom").onclick = () => { closePicker(); openSheet(null, null); };
+$("#pick-done").onclick = () => {
+  const { sel, onDone } = st.pick;
+  closePicker();
+  if (onDone) onDone([...sel]);
+};
+
+/* ---------- Routine editor ---------- */
+function openRoutine(r) {
+  st.rdraft = { id: r ? r.id : null, items: r ? r.items.filter(k => itemInfo(k)) : [] };
+  $("#rsheet-title").textContent = r ? "Editar rutina" : "Nueva rutina";
+  $("#rname").value = r ? r.name : "";
+  $("#rdel").hidden = !r;
+  $("#rconfirm").hidden = true; $("#racts").hidden = false; $("#rerr").hidden = true;
+  renderRItems();
+  $("#rsheet").scrollTop = 0;
+  $("#scrim").hidden = false; $("#rsheet").hidden = false;
+  document.body.classList.add("locked");
+}
+function closeRoutine() { $("#rsheet").hidden = true; st.rdraft = null; afterClose(); }
+function renderRItems() {
+  const box = $("#ritems");
+  box.replaceChildren();
+  if (!st.rdraft) return;
+  const items = st.rdraft.items;
+  if (!items.length) { box.append(h("p", { class: "meta" }, "Todavía no agregaste ejercicios.")); return; }
+  items.forEach((key, i) => {
+    const it = itemInfo(key);
+    if (!it) return;
+    const up = icon(UP, { "aria-label": "Subir " + it.name, onclick: () => moveItem(i, -1) });
+    const down = icon(DOWN, { "aria-label": "Bajar " + it.name, onclick: () => moveItem(i, 1) });
+    up.disabled = i === 0; down.disabled = i === items.length - 1;
+    box.append(h("div", { class: "rrow" },
+      photoEl(it.img, it.name, "", it.illo),
+      h("span", {}, h("b", {}, it.name), h("small", {}, it.group)),
+      h("span", { class: "ord" }, up, down,
+        icon(XMARK, { "aria-label": "Sacar " + it.name + " de la rutina", onclick: () => { items.splice(i, 1); renderRItems(); } }))));
+  });
+}
+function moveItem(i, d) { const a = st.rdraft.items; [a[i], a[i + d]] = [a[i + d], a[i]]; renderRItems(); }
+function rErr(t) { $("#rerr").textContent = t; $("#rerr").hidden = false; }
+$("#radd").onclick = () => openPicker("select", st.rdraft.items, sel => {
+  const keep = st.rdraft.items.filter(k => sel.includes(k));
+  st.rdraft.items = [...keep, ...sel.filter(k => !keep.includes(k))];
+  renderRItems();
+});
+$("#rclose").onclick = closeRoutine;
+$("#rsave").onclick = () => {
+  const name = $("#rname").value.trim();
+  if (!name) { rErr("Ponele un nombre a la rutina."); $("#rname").focus(); return; }
+  if (!st.rdraft.items.length) { rErr("Agregá al menos un ejercicio."); return; }
+  const id = st.rdraft.id || "r" + uid(), items = [...st.rdraft.items];
+  try {
+    mutate(db => { db.routines[id] = { name, items, created: db.routines[id]?.created || Date.now() }; });
+    closeRoutine();
+    toast("Rutina guardada");
+  } catch (e) { rErr(errText(e)); }
+};
+$("#rdel").onclick = () => {
+  $("#rconfirm-txt").textContent = "¿Borrar la rutina «" + ($("#rname").value.trim() || "sin nombre") + "»? Tus pesos y el calendario no se tocan.";
+  $("#rconfirm").hidden = false; $("#racts").hidden = true;
+};
+$("#rconfirm-no").onclick = () => { $("#rconfirm").hidden = true; $("#racts").hidden = false; };
+$("#rconfirm-yes").onclick = () => {
+  const id = st.rdraft.id;
+  mutate(db => { delete db.routines[id]; });
+  closeRoutine();
+  toast("Rutina borrada");
+};
 
 /* ---------- Weight wheel ---------- */
 const wheel = $("#wheel");
@@ -778,9 +1232,11 @@ function setPhotoPreview() {
   $("#photo-rm").textContent = st.cat ? "Volver a la ilustración" : "Quitar foto";
 }
 
-// ex: a saved exercise (or null); cat: the catalog entry when adding from the list
-function openSheet(ex, cat) {
+// ex: a saved exercise (or null); cat: the catalog entry when adding from the list;
+// sessionKey: set when opened from a running workout, so saving also marks it done
+function openSheet(ex, cat, sessionKey) {
   st.editing = ex || null;
+  st.sessionKey = sessionKey || null;
   st.cat = ex ? (ex.cat ? CAT[ex.cat] : null) : (cat || null);
   const custom = !st.cat;
   st.photoFile = null; st.removePhoto = false;
@@ -800,14 +1256,14 @@ function openSheet(ex, cat) {
   $("#meta").hidden = !custom;
   $("#more").hidden = !ex;
   $("#more").textContent = custom ? "Editar foto, nombre y grupo" : "Usar una foto mía";
-  $("#del").hidden = !ex;
+  $("#del").hidden = !ex || !!sessionKey;
   $("#confirm").hidden = true; $("#acts").hidden = false;
   $("#err").hidden = true;
   const hist = ex?.history || [];
   const prevPt = hist.length > 1 ? hist[hist.length - 2] : null;
   $("#prev").hidden = !prevPt;
   if (prevPt) $("#prev").textContent = "Antes: " + fmt(prevPt.w) + " kg (" + fmtDate(prevPt.d) + ")";
-  $("#save").disabled = false; $("#save").textContent = ex ? "Guardar" : "Agregar a mi rutina";
+  $("#save").disabled = false; $("#save").textContent = saveLabel();
   setPhotoPreview();
   $("#sheet").scrollTop = 0;
   $("#scrim").hidden = false; $("#sheet").hidden = false;
@@ -815,18 +1271,21 @@ function openSheet(ex, cat) {
   activeIdx = -1;
   requestAnimationFrame(() => setWheel(ex ? (ex.weight || 0) : 20, false));
 }
+function saveLabel() { return st.sessionKey ? "Guardar y marcar hecho" : st.editing ? "Guardar" : "Agregar a mis ejercicios"; }
 function closeSheet() {
-  $("#scrim").hidden = true; $("#sheet").hidden = true;
-  document.body.classList.remove("locked");
+  $("#sheet").hidden = true;
   if (st.photoUrl) URL.revokeObjectURL(st.photoUrl);
-  st.photoUrl = null; st.photoFile = null; st.editing = null; st.cat = null;
+  st.photoUrl = null; st.photoFile = null; st.editing = null; st.cat = null; st.sessionKey = null;
+  afterClose();
+}
+function closeTop() {
+  if (!$("#picker").hidden) closePicker();
+  else if (!$("#sheet").hidden) closeSheet();
+  else if (!$("#rsheet").hidden) closeRoutine();
 }
 $("#close").onclick = closeSheet;
-$("#scrim").onclick = () => { if (!$("#picker").hidden) closePicker(); else closeSheet(); };
-document.addEventListener("keydown", e => {
-  if (e.key !== "Escape") return;
-  if (!$("#picker").hidden) closePicker(); else if (!$("#sheet").hidden) closeSheet();
-});
+$("#scrim").onclick = closeTop;
+document.addEventListener("keydown", e => { if (e.key === "Escape") closeTop(); });
 $("#more").onclick = () => { $("#details").hidden = false; $("#more").hidden = true; };
 $("#name-in").addEventListener("input", () => { if (!st.cat) setPhotoPreview(); });
 $("#photo-in").onchange = e => {
@@ -888,19 +1347,21 @@ $("#save").onclick = async () => {
       data.photoData = null;
     }
     // Catalog exercises use their catalog id as the key, so each one is added once
-    const id = ex ? ex.id : !custom ? st.cat.id : "c" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+    const id = ex ? ex.id : !custom ? st.cat.id : "c" + uid();
+    const sk = st.sessionKey, exName = custom ? name : st.cat.name;
     putDoc(id, data);
+    if (sk) markDone(sk, w, exName);
     if (custom) store.set("lastGroup", st.group);
     closeSheet();
-    toast(ex ? "Guardado" : "Agregado a tu rutina");
+    toast(sk ? "Hecho · " + fmt(w) + " kg" : ex ? "Guardado" : "Agregado a tus ejercicios");
   } catch (e) {
-    btn.disabled = false; btn.textContent = ex ? "Guardar" : "Agregar a mi rutina";
+    btn.disabled = false; btn.textContent = saveLabel();
     showErr(errText(e));
   }
 };
 
 $("#del").onclick = () => {
-  $("#confirm-txt").textContent = "¿Quitar «" + st.editing.name + "» de tu rutina? También se borra su historial de pesos.";
+  $("#confirm-txt").textContent = "¿Quitar «" + st.editing.name + "» de tus ejercicios? También se borra su historial de pesos.";
   $("#confirm").hidden = false; $("#acts").hidden = true;
 };
 $("#confirm-no").onclick = () => { $("#confirm").hidden = true; $("#acts").hidden = false; };
@@ -909,37 +1370,52 @@ $("#confirm-yes").onclick = async () => {
   try {
     delDoc(ex.id);
     closeSheet();
-    toast("Quitado de tu rutina");
+    toast("Quitado de tus ejercicios");
   } catch (e) {
     $("#confirm").hidden = true; $("#acts").hidden = false;
     showErr("No se pudo quitar. Probá de nuevo.");
   }
 };
-$("#fab").onclick = openPicker;
+$("#fab").onclick = () => { if (st.view === "pesos") openPicker("add"); else openRoutine(null); };
 
 /* ---------- Data (se guarda en este navegador) ---------- */
+// One JSON document: { app, version, exercises: {id: …}, routines: {id: …}, sessions: {id: …} }
 const KEY = "pesos-gym:v1";
-function readAll() {
-  try { return JSON.parse(localStorage.getItem(KEY) || "{}").exercises || {}; } catch { return null; }
+const emptyDb = () => ({ exercises: {}, routines: {}, sessions: {} });
+function readDb() {
+  try {
+    const d = JSON.parse(localStorage.getItem(KEY) || "{}");
+    return { exercises: d.exercises || {}, routines: d.routines || {}, sessions: d.sessions || {} };
+  } catch { return null; }
 }
-function writeAll(all) {
-  localStorage.setItem(KEY, JSON.stringify({ app: "pesos-gym", version: 1, exercises: all }));
+function writeDb(db) {
+  localStorage.setItem(KEY, JSON.stringify({ app: "pesos-gym", version: 2, ...db }));
 }
 function refresh() {
-  const all = readAll();
-  if (all === null) {
+  const db = readDb();
+  if (db === null) {
     hasDb = false;
     setNote("Este navegador no deja guardar datos. Abrí la app en una pestaña normal, no en modo incógnito.");
   }
-  exercises = Object.entries(all || {}).map(([id, d]) => view({ ...d, id, raw: d }));
+  const d = db || emptyDb();
+  exercises = Object.entries(d.exercises).map(([id, x]) => view({ ...x, id, raw: x }));
+  routines = Object.entries(d.routines).map(([id, r]) => ({ ...r, id })).sort((a, b) => a.created - b.created);
+  sessions = Object.entries(d.sessions).map(([id, s]) => ({ ...s, id }));
   loaded = true;
   render();
 }
-function putDoc(id, data) { const all = readAll() || {}; all[id] = data; writeAll(all); refresh(); }
-function delDoc(id) { const all = readAll() || {}; delete all[id]; writeAll(all); refresh(); }
+function mutate(fn) { const db = readDb() || emptyDb(); fn(db); writeDb(db); refresh(); }
+function putDoc(id, data) { mutate(db => { db.exercises[id] = data; }); }
+function delDoc(id) {
+  mutate(db => {
+    delete db.exercises[id];
+    // A deleted custom exercise leaves its routines; catalog ones stay, they can be added again
+    if (!CAT[id]) for (const r of Object.values(db.routines)) r.items = r.items.filter(k => k !== id);
+  });
+}
 
 function exportData() {
-  const blob = new Blob([JSON.stringify({ app: "pesos-gym", version: 1, exercises: readAll() || {} })], { type: "application/json" });
+  const blob = new Blob([JSON.stringify({ app: "pesos-gym", version: 2, ...(readDb() || emptyDb()) })], { type: "application/json" });
   const a = h("a", { href: URL.createObjectURL(blob), download: "pesos-gym-" + today() + ".json" });
   document.body.append(a); a.click(); a.remove();
   setTimeout(() => URL.revokeObjectURL(a.href), 2000);
@@ -952,16 +1428,17 @@ $("#import-in").onchange = async e => {
   let d;
   try { d = JSON.parse(await f.text()); } catch { d = null; }
   if (!d || d.app !== "pesos-gym" || typeof d.exercises !== "object") { toast("Ese archivo no es una copia de Pesos del Gym"); return; }
-  const n = Object.keys(d.exercises).length;
-  if (!confirm("¿Reemplazar tus datos con esta copia (" + n + (n === 1 ? " ejercicio" : " ejercicios") + ")? Lo que tenés ahora se pierde.")) return;
-  try { writeAll(d.exercises); refresh(); toast("Copia restaurada"); } catch (err) { toast(errText(err)); }
+  const next = { exercises: d.exercises, routines: d.routines || {}, sessions: d.sessions || {} };
+  const what = [plural(Object.keys(next.exercises).length, "ejercicio", "ejercicios"), plural(Object.keys(next.routines).length, "rutina", "rutinas"), plural(Object.keys(next.sessions).length, "entrenamiento", "entrenamientos")].join(", ");
+  if (!confirm("¿Reemplazar tus datos con esta copia (" + what + ")? Lo que tenés ahora se pierde.")) return;
+  try { writeDb(next); refresh(); toast("Copia restaurada"); } catch (err) { toast(errText(err)); }
 };
 
 window.addEventListener("storage", e => { if (e.key === KEY) refresh(); });
 navigator.storage?.persist?.().catch(() => {});
 if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
 
-st.view = store.get("view") === "prog" ? "prog" : "pesos";
+st.view = VIEWS.includes(store.get("view")) ? store.get("view") : "pesos";
 refresh();
 </script>
 </body>

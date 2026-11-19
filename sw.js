@@ -3,7 +3,7 @@
 // The page itself is fetched network-first, so a phone with signal always
 // opens the latest version and falls back to the cached one offline.
 // Bump VERSION to drop old caches.
-const VERSION = "pesos-v2";
+const VERSION = "pesos-v3";
 const SHELL = ["./", "index.html", "manifest.webmanifest", "icons/icon.svg", "icons/icon-192.png", "icons/icon-512.png"];
 
 self.addEventListener("install", e => {
