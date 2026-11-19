@@ -1,4 +1,4 @@
-# Pesos del Gym
+# Fierros +
 
 App web para el celular para anotar el peso y los ajustes de cada máquina del gimnasio.
 
