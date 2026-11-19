@@ -131,11 +131,6 @@ main {
   border: 0; background: none; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
   color: var(--muted); font-size: 11px; font-weight: 600; letter-spacing: .03em; position: relative;
 }
-/* Red dot on Entrenar while a workout is running */
-.tab.live .pill::after {
-  content: ""; position: absolute; top: 7px; left: calc(50% + 12px); width: 9px; height: 9px; border-radius: 50%;
-  background: var(--danger); box-shadow: 0 0 0 2px var(--surface);
-}
 .tab svg { width: 24px; height: 24px; }
 .tab[aria-current="page"] { color: var(--accent); }
 .tab[aria-current="page"] .pill { background: var(--accent-soft); }
@@ -267,23 +262,10 @@ main {
 .ord button:disabled { opacity: .35; }
 .ord svg { width: 18px; height: 18px; }
 
-/* Workout session */
-.ses-top { margin-top: 18px; display: flex; flex-direction: column; gap: 8px; }
-.ses-top .meta { font-size: 14px; font-weight: 600; color: var(--fg); }
-.sbar { height: 8px; border-radius: 8px; background: var(--surface-2); overflow: hidden; }
-.sbar i { display: block; height: 100%; background: var(--accent); border-radius: 8px; transition: width .2s; }
-.slist { display: flex; flex-direction: column; }
-.srow { display: grid; grid-template-columns: minmax(0, 1fr) 52px; align-items: center; gap: 8px; border-bottom: 1px solid var(--line); }
-.sbody { display: grid; grid-template-columns: 72px minmax(0, 1fr); gap: 12px; align-items: center; text-align: left; border: 0; background: none; padding: 10px 0; min-width: 0; }
-.sbody .ph { border-radius: 10px; font-size: 16px; }
-.sbody b { display: block; font-weight: 600; font-size: 16px; line-height: 1.25; overflow-wrap: anywhere; }
-.sbody small { color: var(--muted); font-size: 14px; font-variant-numeric: tabular-nums; }
-.check { width: 48px; height: 48px; border-radius: 50%; border: 2px solid var(--line); background: none; display: grid; place-items: center; color: transparent; }
-.check svg { width: 24px; height: 24px; }
-.srow.done .check { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
-.srow.done b { color: var(--muted); }
-.srow.done small { color: var(--accent); font-weight: 600; }
-.wide { width: 100%; margin-top: 14px; }
+/* Done today button */
+.btn-sm { flex: 0 0 auto; padding-inline: 14px; }
+.btn svg { width: 20px; height: 20px; vertical-align: -4px; margin-right: 6px; }
+.btn-done { background: var(--accent-soft); color: var(--accent); box-shadow: inset 0 0 0 2px var(--accent); }
 
 /* Calendar */
 .cal-card { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 12px; margin-top: 14px; }
@@ -298,13 +280,9 @@ main {
   font-size: 15px; font-variant-numeric: tabular-nums; color: var(--fg); padding: 0;
 }
 .day.out { visibility: hidden; }
-.day.lv1 { background: color-mix(in srgb, var(--accent) 28%, transparent); }
-.day.lv2 { background: color-mix(in srgb, var(--accent) 62%, transparent); color: var(--on-accent); font-weight: 600; }
 .day.lv3 { background: var(--accent); color: var(--on-accent); font-weight: 700; }
 .day.today { box-shadow: inset 0 0 0 2px var(--accent); }
 .day.sel { outline: 2px solid var(--fg); outline-offset: 1px; }
-.legend { display: flex; align-items: center; gap: 6px; justify-content: flex-end; flex-wrap: wrap; font-size: 12px; color: var(--muted); margin-top: 10px; }
-.legend i { width: 14px; height: 14px; border-radius: 4px; display: inline-block; }
 .day-h { margin: 22px 0 10px; font-size: 18px; font-weight: 700; }
 .day-h::first-letter { text-transform: uppercase; }
 .dlist { display: flex; flex-direction: column; gap: 10px; }
@@ -610,8 +588,8 @@ const $ = s => document.querySelector(s);
 let exercises = [], routines = [], sessions = [], loaded = false, hasDb = true;
 const st = {
   view: "pesos", editing: null, cat: null, weight: 0, group: GROUPS[0], photoFile: null, photoUrl: null, removePhoto: false,
-  chartId: null, pickGroup: "Todos", pick: { mode: "add", sel: [], onDone: null }, rdraft: null, sessionKey: null,
-  ending: false, calMonth: null, calSel: null
+  chartId: null, pickGroup: "Todos", pick: { mode: "add", sel: [], onDone: null }, rdraft: null,
+  calMonth: null, calSel: null
 };
 
 function h(tag, attrs, ...kids) {
@@ -712,126 +690,60 @@ const PREV = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-
 const NEXT = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>';
 const icon = (svg, attrs) => { const b = h("button", attrs); b.innerHTML = svg; return b; };
 
-function activeSession() { return sessions.find(s => !s.end) || null; }
+// A routine marked as done: { date, start (when it was marked), routine, name, done: { key: { w, n } } }
+const doneToday = r => sessions.find(s => s.routine === r.id && s.date === today());
 
 function renderTrain() {
   const root = $("#view-train");
   root.replaceChildren();
   if (!loaded) return;
-  const ses = activeSession();
-  if (ses) { renderSession(root, ses); return; }
   if (!routines.length) {
     root.append(h("div", { class: "empty" },
       h("b", {}, "Armá tu primera rutina"),
-      "Juntá los ejercicios de cada día, por ejemplo «Día A · Pecho y tríceps», y empezá a entrenar con un toque.",
+      "Juntá los ejercicios de cada día, por ejemplo «Día A · Pecho y tríceps». Cuando la hagas, la marcás y queda en el calendario.",
       h("br"),
-      h("button", { class: "btn btn-main", onclick: () => openRoutine(null) }, "Crear rutina"),
-      h("br"),
-      h("button", { class: "link", style: "margin-top:18px", onclick: () => startSession(null) }, "Entrenar sin rutina")));
+      h("button", { class: "btn btn-main", onclick: () => openRoutine(null) }, "Crear rutina")));
     return;
   }
-  root.append(h("div", { class: "section-h" },
-    h("h2", {}, "Tus rutinas"),
-    h("button", { class: "link", onclick: () => startSession(null) }, "Entrenar sin rutina")));
+  root.append(h("div", { class: "section-h" }, h("h2", {}, "Tus rutinas")));
   root.append(h("div", { class: "rlist" }, routines.map(r => {
     const its = r.items.map(itemInfo).filter(Boolean);
     const groups = [...new Set(its.map(i => i.group))].join(", ");
-    const last = sessions.filter(s => s.routine === r.id && s.end).sort((a, b) => b.start - a.start)[0];
+    const hecha = doneToday(r);
+    const last = sessions.filter(s => s.routine === r.id).sort((a, b) => b.start - a.start)[0];
+    const when = hecha ? " · hecha hoy" : last ? " · última vez " + fmtDate(last.date) : "";
+    const mark = h("button", { class: "btn " + (hecha ? "btn-done" : "btn-main"), "aria-pressed": String(!!hecha), onclick: () => toggleToday(r) });
+    mark.innerHTML = hecha ? CHECK : "";
+    mark.append(hecha ? "Hecha hoy" : "La hice hoy");
     return h("article", { class: "rcard" },
       h("div", {},
         h("h3", {}, r.name),
-        h("p", { class: "meta" }, plural(its.length, "ejercicio", "ejercicios") + (groups ? " · " + groups : "") + (last ? " · última vez " + fmtDate(last.date) : ""))),
+        h("p", { class: "meta" }, plural(its.length, "ejercicio", "ejercicios") + (groups ? " · " + groups : "") + when)),
       h("div", { class: "strip" },
         its.slice(0, 5).map(i => photoEl(i.img, i.name, "", i.illo)),
         its.length > 5 ? h("div", { class: "more-n" }, "+" + (its.length - 5)) : null),
       h("div", { class: "acts" },
-        h("button", { class: "btn btn-ghost", style: "flex:0 0 auto;padding-inline:18px", onclick: () => openRoutine(r) }, "Editar"),
-        h("button", { class: "btn btn-main", onclick: () => startSession(r) }, "Empezar")));
+        h("button", { class: "btn btn-ghost btn-sm", onclick: () => openRoutine(r) }, "Editar"),
+        h("button", { class: "btn btn-ghost btn-sm", onclick: () => openRoutine({ id: null, name: r.name + " (copia)", items: r.items }) }, "Duplicar"),
+        mark));
   })));
 }
 
-function startSession(r) {
-  if (activeSession()) { go("train"); return; }
-  const now = Date.now();
-  mutate(db => {
-    db.sessions["s" + uid()] = {
-      start: now, end: null, date: dayKey(now), routine: r ? r.id : null,
-      name: r ? r.name : "Entrenamiento libre", items: r ? r.items.filter(k => itemInfo(k)) : [], done: {}
-    };
-  });
-  st.ending = false;
-  go("train");
-}
-
-// If the workout was left open, close it a few minutes after the last exercise instead of hours later
-function endTime(ses) {
-  const last = Math.max(ses.start, ...Object.values(ses.done).map(d => d.t));
-  return Date.now() - last > 3600e3 ? last + 5 * 60e3 : Date.now();
-}
-
-function renderSession(root, ses) {
-  const items = ses.items.map(itemInfo).filter(Boolean);
-  const nDone = items.filter(i => ses.done[i.key]).length;
-  const pct = items.length ? Math.round(nDone / items.length * 100) : 0;
-  if (Date.now() - Math.max(ses.start, ...Object.values(ses.done).map(d => d.t)) > 3 * 3600e3) {
-    root.append(h("p", { class: "note" }, "Este entrenamiento quedó abierto desde el " + fmtDate(ses.date) + ". Terminalo para que se guarde en el calendario."));
-  }
-  root.append(h("div", { class: "ses-top" },
-    h("p", { class: "meta" }, items.length ? nDone + " de " + plural(items.length, "ejercicio hecho", "ejercicios hechos") : "Agregá los ejercicios que vas haciendo"),
-    h("div", { class: "sbar" }, h("i", { style: "width:" + pct + "%" }))));
-  const list = h("div", { class: "slist" });
-  for (const it of items) {
-    const d = ses.done[it.key];
-    const w = d ? d.w : it.ex ? it.ex.weight : null;
-    const sub = d ? "Hecho · " + fmt(d.w) + " kg"
-      : w != null ? fmt(w) + " kg" + (it.ex.adjust ? " · " + it.ex.adjust : "")
-      : "Tocá para poner el peso";
-    const chk = icon(CHECK, { class: "check", "aria-label": d ? "Desmarcar " + it.name : "Marcar " + it.name + " como hecho", onclick: () => toggleDone(ses, it) });
-    list.append(h("div", { class: "srow" + (d ? " done" : "") },
-      h("button", { class: "sbody", onclick: () => openSheet(it.ex, it.ex ? null : CAT[it.key], it.key) },
-        photoEl(it.img, it.name, "", it.illo),
-        h("span", {}, h("b", {}, it.name), h("small", {}, sub))),
-      chk));
-  }
-  root.append(list, h("button", { class: "more wide", onclick: () => openPicker("select", ses.items, sel => mutate(db => {
-    const s = db.sessions[ses.id];
-    s.items = [...s.items.filter(k => sel.includes(k) || s.done[k]), ...sel.filter(k => !s.items.includes(k))];
-  })) }, "Agregar o sacar ejercicios"));
-  if (st.ending) {
-    root.append(h("div", { class: "confirm", style: "margin-top:16px" },
-      h("p", {}, nDone
-        ? "¿Terminar? Hiciste " + plural(nDone, "ejercicio", "ejercicios") + " en " + dur(endTime(ses) - ses.start) + "."
-        : "No marcaste ningún ejercicio. Si terminás ahora, este entrenamiento no se guarda."),
-      h("div", { class: "acts" },
-        h("button", { class: "btn btn-ghost", onclick: () => { st.ending = false; render(); } }, "Seguir"),
-        h("button", { class: "btn btn-main", onclick: () => endSession(ses, nDone) }, nDone ? "Terminar" : "Descartar"))));
-  } else {
-    root.append(h("div", { class: "acts", style: "margin-top:20px" },
-      h("button", { class: "btn btn-main", onclick: () => { st.ending = true; render(); } }, "Terminar entrenamiento")));
-  }
-}
-
-function toggleDone(ses, it) {
-  if (ses.done[it.key]) { mutate(db => { delete db.sessions[ses.id].done[it.key]; }); return; }
-  if (!it.ex) { openSheet(null, CAT[it.key], it.key); return; }
-  markDone(it.key, it.ex.weight || 0, it.name);
-}
-function markDone(key, w, name) {
-  const ses = activeSession();
-  if (ses) mutate(db => { db.sessions[ses.id].done[key] = { w, t: Date.now(), n: name }; });
-}
-function endSession(ses, nDone) {
-  st.ending = false;
-  if (!nDone) {
-    mutate(db => { delete db.sessions[ses.id]; });
-    toast("Entrenamiento descartado");
+// Marks the routine as done today with the weights you have now; tapping again undoes it
+function toggleToday(r) {
+  const prev = doneToday(r);
+  if (prev) {
+    mutate(db => { delete db.sessions[prev.id]; });
+    toast("Desmarcada");
     return;
   }
-  const end = endTime(ses);
-  mutate(db => { db.sessions[ses.id].end = end; });
-  st.calSel = ses.date; st.calMonth = ses.date.slice(0, 7);
-  toast("Guardado · " + dur(end - ses.start));
-  go("cal");
+  const done = {};
+  for (const k of r.items) {
+    const it = itemInfo(k);
+    if (it) done[k] = { w: it.ex ? (it.ex.weight || 0) : null, n: it.name };
+  }
+  mutate(db => { db.sessions["s" + uid()] = { date: today(), start: Date.now(), routine: r.id, name: r.name, done }; });
+  toast("Anotada en el calendario");
 }
 
 /* ---------- Calendario view ---------- */
@@ -848,9 +760,10 @@ function weekStreak(done) {
 function renderCal() {
   const root = $("#view-cal");
   root.replaceChildren();
-  const done = sessions.filter(s => s.end).sort((a, b) => b.start - a.start);
+  // end === null only on workouts left open by the old start/finish flow
+  const done = sessions.filter(s => s.end !== null).sort((a, b) => b.start - a.start);
   if (!done.length) {
-    root.append(h("div", { class: "empty" }, h("b", {}, "Sin entrenamientos todavía"), "Cuando termines un entrenamiento desde Entrenar, aparece acá."));
+    root.append(h("div", { class: "empty" }, h("b", {}, "Sin entrenamientos todavía"), "Cuando marques una rutina con «La hice hoy» en Entrenar, aparece acá."));
     return;
   }
   const byDay = {};
@@ -858,29 +771,29 @@ function renderCal() {
   if (!st.calSel) st.calSel = byDay[today()] ? today() : done[0].date;
   if (!st.calMonth) st.calMonth = st.calSel.slice(0, 7);
   const [Y, M] = st.calMonth.split("-").map(Number);
+  const days = list => new Set(list.map(s => s.date)).size;
   const inMonth = done.filter(s => s.date.startsWith(st.calMonth));
-  const ms = inMonth.reduce((a, s) => a + (s.end - s.start), 0);
+  const week = mondayOf(today());
+  const thisWeek = done.filter(s => mondayOf(s.date) === week);
   const streak = weekStreak(done);
 
   root.append(h("div", { class: "stats", style: "margin-top:18px" },
-    h("div", { class: "stat" }, h("span", {}, "Entrenos"), h("b", {}, String(inMonth.length))),
-    h("div", { class: "stat" }, h("span", {}, "Tiempo"), h("b", {}, ms ? dur(ms) : "–")),
-    h("div", { class: "stat" }, h("span", {}, "Racha"), h("b", {}, String(streak)), streak === 1 ? " semana" : " semanas")));
+    h("div", { class: "stat" }, h("span", {}, "Este mes"), h("b", {}, String(days(inMonth))), days(inMonth) === 1 ? " día" : " días"),
+    h("div", { class: "stat" }, h("span", {}, "Esta semana"), h("b", {}, String(days(thisWeek))), days(thisWeek) === 1 ? " día" : " días"),
+    h("div", { class: "stat" }, h("span", {}, "Racha"), h("b", {}, String(streak)), " sem.")));
 
   const shift = d => { const t = new Date(Y, M - 1 + d, 1); st.calMonth = t.getFullYear() + "-" + String(t.getMonth() + 1).padStart(2, "0"); renderCal(); };
   const isCurrent = st.calMonth >= today().slice(0, 7);
   const grid = h("div", { class: "cal" }, ["L", "M", "M", "J", "V", "S", "D"].map(d => h("span", { class: "wd", "aria-hidden": "true" }, d)));
   const offset = (new Date(Y, M - 1, 1).getDay() + 6) % 7;
   for (let i = 0; i < offset; i++) grid.append(h("span", { class: "day out" }));
-  const days = new Date(Y, M, 0).getDate();
-  for (let d = 1; d <= days; d++) {
+  const nDays = new Date(Y, M, 0).getDate();
+  for (let d = 1; d <= nDays; d++) {
     const key = st.calMonth + "-" + String(d).padStart(2, "0");
     const list = byDay[key] || [];
-    const mins = list.reduce((a, s) => a + (s.end - s.start), 0) / 60000;
-    const lv = !list.length ? 0 : mins < 30 ? 1 : mins < 60 ? 2 : 3;
-    const label = d + (list.length ? ": " + plural(list.length, "entrenamiento", "entrenamientos") + ", " + dur(mins * 60000) : ": sin entrenar");
+    const label = d + (list.length ? ": " + list.map(s => s.name).join(", ") : ": sin entrenar");
     grid.append(h("button", {
-      class: "day" + (lv ? " lv" + lv : "") + (key === today() ? " today" : "") + (key === st.calSel ? " sel" : ""),
+      class: "day" + (list.length ? " lv3" : "") + (key === today() ? " today" : "") + (key === st.calSel ? " sel" : ""),
       "aria-label": label, onclick: () => { st.calSel = key; renderCal(); }
     }, String(d)));
   }
@@ -889,11 +802,7 @@ function renderCal() {
   nextBtn.disabled = isCurrent;
   root.append(h("div", { class: "cal-card" },
     h("div", { class: "cal-h" }, icon(PREV, { class: "icon-btn", "aria-label": "Mes anterior", onclick: () => shift(-1) }), h("b", {}, monthName), nextBtn),
-    grid,
-    h("div", { class: "legend" },
-      h("i", { style: "background:color-mix(in srgb, var(--accent) 28%, transparent)" }), "menos de 30 min",
-      h("i", { style: "background:color-mix(in srgb, var(--accent) 62%, transparent);margin-left:6px" }), "30–60",
-      h("i", { style: "background:var(--accent);margin-left:6px" }), "más de 1 h")));
+    grid));
 
   const selLong = new Date(st.calSel + "T12:00:00").toLocaleDateString("es-AR", { weekday: "long", day: "numeric", month: "long" });
   root.append(h("h2", { class: "day-h" }, selLong));
@@ -902,11 +811,11 @@ function renderCal() {
   root.append(h("div", { class: "dlist" }, daySes.map(s => {
     const time = new Date(s.start).toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit" });
     const rows = Object.entries(s.done).sort((a, b) => a[1].t - b[1].t)
-      .map(([k, d]) => h("li", {}, h("span", {}, itemInfo(k)?.name || d.n || "Ejercicio"), h("span", {}, fmt(d.w) + " kg")));
+      .map(([k, d]) => h("li", {}, h("span", {}, itemInfo(k)?.name || d.n || "Ejercicio"), h("span", {}, d.w != null ? fmt(d.w) + " kg" : "–")));
     return h("article", { class: "scard" },
-      h("div", { class: "scard-h" }, h("b", {}, s.name), h("span", {}, time + " · " + dur(s.end - s.start))),
+      h("div", { class: "scard-h" }, h("b", {}, s.name), h("span", {}, s.end ? time + " · " + dur(s.end - s.start) : time)),
       h("ul", {}, rows),
-      h("button", { class: "link", onclick: () => { if (confirm("¿Borrar este entrenamiento del calendario?")) mutate(db => { delete db.sessions[s.id]; }); } }, "Borrar entrenamiento"));
+      h("button", { class: "link", onclick: () => { if (confirm("¿Sacar «" + s.name + "» de este día?")) mutate(db => { delete db.sessions[s.id]; }); } }, "Sacar del calendario"));
   })));
 }
 
@@ -1013,23 +922,20 @@ function drawChart(box, pts) {
 const VIEWS = ["pesos", "train", "cal", "prog"];
 const TITLES = { pesos: "Pesos", train: "Entrenar", cal: "Calendario", prog: "Progreso" };
 function subText() {
-  const ses = activeSession();
-  if (st.view === "train" && ses) return dur(Date.now() - ses.start);
   if (st.view === "pesos" && loaded && exercises.length) return plural(exercises.length, "ejercicio", "ejercicios");
+  if (st.view === "train" && loaded && routines.length) return plural(routines.length, "rutina", "rutinas");
   return "";
 }
 function render() {
-  const ses = activeSession();
-  $("#title").textContent = st.view === "train" && ses ? ses.name : TITLES[st.view];
+  $("#title").textContent = TITLES[st.view];
   $("#sub").textContent = subText();
   for (const v of VIEWS) {
     $("#view-" + v).hidden = st.view !== v;
     if (st.view === v) $("#tab-" + v).setAttribute("aria-current", "page");
     else $("#tab-" + v).removeAttribute("aria-current");
   }
-  $("#tab-train").classList.toggle("live", !!ses);
   ({ pesos: renderPesos, train: renderTrain, cal: renderCal, prog: renderProg })[st.view]();
-  const fab = st.view === "pesos" || (st.view === "train" && !ses && routines.length > 0);
+  const fab = st.view === "pesos" || (st.view === "train" && routines.length > 0);
   $("#fab").hidden = !(hasDb && loaded && fab);
   $("#fab").setAttribute("aria-label", st.view === "pesos" ? "Agregar ejercicio" : "Nueva rutina");
   if (!$("#picker").hidden) renderPicker();
@@ -1037,7 +943,6 @@ function render() {
 }
 function go(v) { st.view = v; store.set("view", v); window.scrollTo(0, 0); render(); }
 VIEWS.forEach(v => { $("#tab-" + v).onclick = () => go(v); });
-setInterval(() => { if (st.view === "train" && activeSession()) $("#sub").textContent = subText(); }, 15000);
 let rzT;
 window.addEventListener("resize", () => { clearTimeout(rzT); rzT = setTimeout(() => st.view === "prog" && renderProg(), 150); });
 
@@ -1121,11 +1026,13 @@ $("#pick-done").onclick = () => {
 };
 
 /* ---------- Routine editor ---------- */
+// r: a saved routine to edit, a draft without id to duplicate, or null for a new one
 function openRoutine(r) {
-  st.rdraft = { id: r ? r.id : null, items: r ? r.items.filter(k => itemInfo(k)) : [] };
-  $("#rsheet-title").textContent = r ? "Editar rutina" : "Nueva rutina";
+  const editing = !!(r && r.id);
+  st.rdraft = { id: editing ? r.id : null, items: r ? r.items.filter(k => itemInfo(k)) : [] };
+  $("#rsheet-title").textContent = editing ? "Editar rutina" : r ? "Duplicar rutina" : "Nueva rutina";
   $("#rname").value = r ? r.name : "";
-  $("#rdel").hidden = !r;
+  $("#rdel").hidden = !editing;
   $("#rconfirm").hidden = true; $("#racts").hidden = false; $("#rerr").hidden = true;
   renderRItems();
   $("#rsheet").scrollTop = 0;
@@ -1232,11 +1139,9 @@ function setPhotoPreview() {
   $("#photo-rm").textContent = st.cat ? "Volver a la ilustración" : "Quitar foto";
 }
 
-// ex: a saved exercise (or null); cat: the catalog entry when adding from the list;
-// sessionKey: set when opened from a running workout, so saving also marks it done
-function openSheet(ex, cat, sessionKey) {
+// ex: a saved exercise (or null); cat: the catalog entry when adding from the list
+function openSheet(ex, cat) {
   st.editing = ex || null;
-  st.sessionKey = sessionKey || null;
   st.cat = ex ? (ex.cat ? CAT[ex.cat] : null) : (cat || null);
   const custom = !st.cat;
   st.photoFile = null; st.removePhoto = false;
@@ -1256,7 +1161,7 @@ function openSheet(ex, cat, sessionKey) {
   $("#meta").hidden = !custom;
   $("#more").hidden = !ex;
   $("#more").textContent = custom ? "Editar foto, nombre y grupo" : "Usar una foto mía";
-  $("#del").hidden = !ex || !!sessionKey;
+  $("#del").hidden = !ex;
   $("#confirm").hidden = true; $("#acts").hidden = false;
   $("#err").hidden = true;
   const hist = ex?.history || [];
@@ -1271,11 +1176,11 @@ function openSheet(ex, cat, sessionKey) {
   activeIdx = -1;
   requestAnimationFrame(() => setWheel(ex ? (ex.weight || 0) : 20, false));
 }
-function saveLabel() { return st.sessionKey ? "Guardar y marcar hecho" : st.editing ? "Guardar" : "Agregar a mis ejercicios"; }
+function saveLabel() { return st.editing ? "Guardar" : "Agregar a mis ejercicios"; }
 function closeSheet() {
   $("#sheet").hidden = true;
   if (st.photoUrl) URL.revokeObjectURL(st.photoUrl);
-  st.photoUrl = null; st.photoFile = null; st.editing = null; st.cat = null; st.sessionKey = null;
+  st.photoUrl = null; st.photoFile = null; st.editing = null; st.cat = null;
   afterClose();
 }
 function closeTop() {
@@ -1348,12 +1253,10 @@ $("#save").onclick = async () => {
     }
     // Catalog exercises use their catalog id as the key, so each one is added once
     const id = ex ? ex.id : !custom ? st.cat.id : "c" + uid();
-    const sk = st.sessionKey, exName = custom ? name : st.cat.name;
     putDoc(id, data);
-    if (sk) markDone(sk, w, exName);
     if (custom) store.set("lastGroup", st.group);
     closeSheet();
-    toast(sk ? "Hecho · " + fmt(w) + " kg" : ex ? "Guardado" : "Agregado a tus ejercicios");
+    toast(ex ? "Guardado" : "Agregado a tus ejercicios");
   } catch (e) {
     btn.disabled = false; btn.textContent = saveLabel();
     showErr(errText(e));

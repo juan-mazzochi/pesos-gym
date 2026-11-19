@@ -6,8 +6,8 @@ App web para el celular para anotar el peso y los ajustes de cada máquina del g
 
 - Elegís tus ejercicios de un catálogo de 68 ilustrados, con buscador y filtro por grupo muscular.
 - Tocás un ejercicio y elegís el peso con una rueda que va de a 2,5 kg.
-- En **Entrenar** armás rutinas (por ejemplo «Día A · Pecho y tríceps») y empezás una sesión: vas tildando cada ejercicio con el peso que usaste.
-- En **Calendario** ves qué días entrenaste, cuánto tiempo, y tu racha de semanas seguidas.
+- En **Entrenar** armás rutinas (por ejemplo «Día A · Pecho y tríceps»), las duplicás para hacer variantes, y cuando hacés una tocás **La hice hoy**.
+- En **Calendario** ves qué días entrenaste, qué rutina hiciste con qué pesos, y tu racha de semanas seguidas.
 - Cada cambio de peso queda en el historial, y en **Progreso** ves el gráfico por ejercicio.
 - Si un ejercicio no está, podés crear uno propio con tu foto, o usar tu foto en cualquier ejercicio del catálogo.
 
