@@ -1,5 +1,14 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Pesos del Gym</title>
-<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="Anotá el peso y los ajustes de cada máquina del gimnasio.">
+<meta name="theme-color" content="#181a47">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&display=swap">
 <style>
@@ -38,7 +47,10 @@
   color-scheme: dark;
 }
 * { box-sizing: border-box; }
+[hidden] { display: none !important; }
+img { max-width: 100%; }
 body {
+  margin: 0;
   background: var(--bg); color: var(--fg); font-family: var(--font); font-size: 16px;
   -webkit-tap-highlight-color: transparent;
 }
@@ -255,8 +267,16 @@ main {
   bottom: calc(var(--nav-h) + 20px + env(safe-area-inset-bottom, 0px));
   background: var(--fg); color: var(--bg); padding: 10px 16px; border-radius: 12px; font-weight: 600; font-size: 14px;
 }
+/* Backup */
+.backup { margin-top: 36px; padding-top: 20px; border-top: 1px solid var(--line); display: flex; flex-direction: column; gap: 10px; }
+.backup h2 { margin: 0; font-weight: 700; font-size: 18px; }
+.backup p { margin: 0; color: var(--muted); font-size: 14px; line-height: 1.45; }
+label.btn { text-align: center; cursor: pointer; }
+
 @media (prefers-reduced-motion: reduce) { .sheet { animation: none; } .card, .wi { transition: none; } }
 </style>
+</head>
+<body>
 
 <header class="top">
   <div class="top-in">
@@ -379,6 +399,7 @@ main {
 </section>
 
 <div class="toast" id="toast" role="status" hidden></div>
+<input class="vh" type="file" id="import-in" accept="application/json,.json">
 
 <script>
 const GROUPS = ["Pecho", "Espalda", "Hombros", "Bíceps", "Tríceps", "Piernas", "Glúteos", "Abdomen", "Otros"];
@@ -451,7 +472,6 @@ const CAT = Object.fromEntries(CATALOG.map(c => [c.id, c]));
 const STEP = 2.5, MAX = 300, ITEM = 44;
 const $ = s => document.querySelector(s);
 
-let db = null, assets = null, col = null;
 let exercises = [], loaded = false, hasDb = true;
 const st = { view: "pesos", editing: null, cat: null, weight: 0, group: GROUPS[0], photoFile: null, photoUrl: null, removePhoto: false, chartId: null, pickGroup: "Todos" };
 
@@ -475,7 +495,7 @@ const store = { get(k) { try { return localStorage.getItem(k); } catch { return 
 // A saved exercise merged with its catalog entry (custom ones keep their own name, group and photo)
 function view(doc) {
   const c = doc.cat ? CAT[doc.cat] : null;
-  const own = doc.photo ? "/_blob/" + doc.photo : (doc.photoData || null);
+  const own = doc.photoData || null;
   return { ...doc, name: c ? c.name : doc.name, group: c ? c.group : (doc.group || "Otros"), img: own || (c ? c.img : null), illo: !own && !!c };
 }
 
@@ -504,6 +524,7 @@ function renderPesos() {
       hasDb ? "Elegí los ejercicios que hacés de la lista y anotá el peso de cada uno." : "",
       hasDb ? h("br") : null,
       hasDb ? h("button", { class: "btn btn-main", onclick: openPicker }, "Elegir ejercicios") : null));
+    if (hasDb) root.append(backupEl());
     return;
   }
   for (const g of GROUPS) {
@@ -519,6 +540,16 @@ function renderPesos() {
             h("span", { class: "w" }, fmt(ex.weight || 0), h("small", {}, "kg")),
             ex.adjust ? h("span", { class: "adj" }, ex.adjust) : null))))));
   }
+  root.append(backupEl());
+}
+
+function backupEl() {
+  return h("section", { class: "backup" },
+    h("h2", {}, "Copia de seguridad"),
+    h("p", {}, "Tus pesos se guardan solo en este celular. Bajá una copia de vez en cuando para no perderlos si cambiás de teléfono o borrás los datos del navegador."),
+    h("div", { class: "acts" },
+      h("button", { class: "btn btn-ghost", onclick: exportData }, "Exportar copia"),
+      h("label", { class: "btn btn-ghost", for: "import-in" }, "Importar copia")));
 }
 
 /* ---------- Progreso view ---------- */
@@ -814,16 +845,15 @@ async function shrink(file, max) {
 
 function showErr(t) { $("#err").textContent = t; $("#err").hidden = false; }
 function errText(e) {
-  if (e?.code === "quota_exceeded" || e?.code === "quota_or_state") return "No hay más espacio para guardar. Quitá algún ejercicio o foto que no uses.";
-  if (e?.code === "too_large") return "La foto es demasiado grande. Probá con otra.";
-  return "No se pudo guardar. Revisá la conexión y probá de nuevo.";
+  if (e?.name === "QuotaExceededError") return "No hay más espacio para guardar. Quitá fotos de ejercicios propios que no uses.";
+  return "No se pudo guardar. Probá de nuevo.";
 }
 
 $("#save").onclick = async () => {
   const custom = !st.cat;
   const name = $("#name-in").value.trim();
   if (custom && !name) { $("#details").hidden = false; $("#more").hidden = true; showErr("Poné el nombre del ejercicio."); $("#name-in").focus(); return; }
-  if (!col) { showErr("No hay conexión con tus datos. Recargá la página."); return; }
+  if (!hasDb) { showErr("Este navegador no deja guardar datos. Abrí la app en una pestaña normal, no en modo incógnito."); return; }
   const ex = st.editing;
   const btn = $("#save");
   btn.disabled = true; btn.textContent = "Guardando…"; $("#err").hidden = true;
@@ -839,27 +869,15 @@ $("#save").onclick = async () => {
     const data = { ...base, adjust: $("#adj-in").value.trim(), weight: w, history: hist.slice(-400), updated: Date.now() };
     if (custom) { data.name = name; data.group = st.group; data.cat = null; }
     else { data.cat = st.cat.id; delete data.name; delete data.group; }
-    let oldAsset = null;
     if (custom && st.photoFile) {
-      if (assets) {
-        const c = await shrink(st.photoFile, 720);
-        const blob = await new Promise(r => c.toBlob(r, "image/jpeg", .82));
-        const up = await assets.upload(blob, { type: "image/jpeg" });
-        oldAsset = base.photo || null;
-        data.photo = up.id; data.photoData = null;
-      } else {
-        const c = await shrink(st.photoFile, 360);
-        data.photoData = c.toDataURL("image/jpeg", .72); data.photo = null;
-      }
+      const c = await shrink(st.photoFile, 480);
+      data.photoData = c.toDataURL("image/jpeg", .75);
     } else if (custom && st.removePhoto) {
-      oldAsset = base.photo || null;
-      data.photo = null; data.photoData = null;
+      data.photoData = null;
     }
-    // Catalog exercises use their catalog id as the document id, so each one is added once
-    if (ex) await col.doc(ex.id).set(data);
-    else if (!custom) await col.doc(st.cat.id).set(data);
-    else await col.add(data);
-    if (oldAsset && assets) assets.delete(oldAsset).catch(() => {});
+    // Catalog exercises use their catalog id as the key, so each one is added once
+    const id = ex ? ex.id : !custom ? st.cat.id : "c" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+    putDoc(id, data);
     if (custom) store.set("lastGroup", st.group);
     closeSheet();
     toast(ex ? "Guardado" : "Agregado a tu rutina");
@@ -877,8 +895,7 @@ $("#confirm-no").onclick = () => { $("#confirm").hidden = true; $("#acts").hidde
 $("#confirm-yes").onclick = async () => {
   const ex = st.editing;
   try {
-    await col.doc(ex.id).delete();
-    if (ex.photo && assets) assets.delete(ex.photo).catch(() => {});
+    delDoc(ex.id);
     closeSheet();
     toast("Quitado de tu rutina");
   } catch (e) {
@@ -888,33 +905,52 @@ $("#confirm-yes").onclick = async () => {
 };
 $("#fab").onclick = openPicker;
 
-/* ---------- Data ---------- */
+/* ---------- Data (se guarda en este navegador) ---------- */
+const KEY = "pesos-gym:v1";
+function readAll() {
+  try { return JSON.parse(localStorage.getItem(KEY) || "{}").exercises || {}; } catch { return null; }
+}
+function writeAll(all) {
+  localStorage.setItem(KEY, JSON.stringify({ app: "pesos-gym", version: 1, exercises: all }));
+}
+function refresh() {
+  const all = readAll();
+  if (all === null) {
+    hasDb = false;
+    setNote("Este navegador no deja guardar datos. Abrí la app en una pestaña normal, no en modo incógnito.");
+  }
+  exercises = Object.entries(all || {}).map(([id, d]) => view({ ...d, id, raw: d }));
+  loaded = true;
+  render();
+}
+function putDoc(id, data) { const all = readAll() || {}; all[id] = data; writeAll(all); refresh(); }
+function delDoc(id) { const all = readAll() || {}; delete all[id]; writeAll(all); refresh(); }
+
+function exportData() {
+  const blob = new Blob([JSON.stringify({ app: "pesos-gym", version: 1, exercises: readAll() || {} })], { type: "application/json" });
+  const a = h("a", { href: URL.createObjectURL(blob), download: "pesos-gym-" + today() + ".json" });
+  document.body.append(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+  toast("Copia descargada");
+}
+$("#import-in").onchange = async e => {
+  const f = e.target.files[0];
+  e.target.value = "";
+  if (!f) return;
+  let d;
+  try { d = JSON.parse(await f.text()); } catch { d = null; }
+  if (!d || d.app !== "pesos-gym" || typeof d.exercises !== "object") { toast("Ese archivo no es una copia de Pesos del Gym"); return; }
+  const n = Object.keys(d.exercises).length;
+  if (!confirm("¿Reemplazar tus datos con esta copia (" + n + (n === 1 ? " ejercicio" : " ejercicios") + ")? Lo que tenés ahora se pierde.")) return;
+  try { writeAll(d.exercises); refresh(); toast("Copia restaurada"); } catch (err) { toast(errText(err)); }
+};
+
+window.addEventListener("storage", e => { if (e.key === KEY) refresh(); });
+navigator.storage?.persist?.().catch(() => {});
+if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
+
 st.view = store.get("view") === "prog" ? "prog" : "pesos";
-render();
-(async () => {
-  if (!window.claude?.use) {
-    hasDb = false; loaded = true;
-    setNote("Abrí esta app desde su link de Claude para guardar tus pesos.");
-    render(); return;
-  }
-  const timer = setTimeout(() => setNote("Todavía no pude conectar con tus datos. Revisá la conexión; se actualiza solo."), 10000);
-  db = await window.claude.use("db");
-  if (!db) {
-    clearTimeout(timer); hasDb = false; loaded = true;
-    setNote("Para ver y guardar tus pesos, abrí la app con tu cuenta de Claude iniciada.");
-    render(); return;
-  }
-  window.claude.use("assets").then(a => { assets = a; }).catch(() => {});
-  col = db.collection("exercises");
-  col.onSnapshot(snap => {
-    exercises = snap.docs.map(d => view({ ...d.data(), id: d.id, raw: d.data() }));
-    loaded = true;
-    if (!snap.metadata.fromCache) { clearTimeout(timer); setNote(""); }
-    render();
-  }, () => {
-    clearTimeout(timer); loaded = true;
-    setNote("Se cortó la conexión con tus datos. Recargá la página.");
-    render();
-  });
-})();
+refresh();
 </script>
+</body>
+</html>
