@@ -90,9 +90,10 @@ main {
 .card:active { transform: scale(.97); }
 .ph {
   aspect-ratio: 4 / 3; max-width: 100%; background: var(--surface-2); display: grid; place-items: center;
-  color: var(--muted); font-size: 28px; font-weight: 700;
+  color: var(--muted); font-size: 28px; font-weight: 700; position: relative; overflow: hidden;
 }
-.ph img { width: 100%; height: 100%; object-fit: cover; display: block; }
+/* Absolute so images without an intrinsic size (the SVGs) can't stretch the box */
+.ph img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
 .ph.illo { background: var(--illo-bg); }
 .ph.illo img { object-fit: contain; padding: 8%; }
 .hero.ph.illo { aspect-ratio: 3 / 1; }
@@ -721,8 +722,8 @@ wheel.addEventListener("keydown", e => {
   if (e.key === "ArrowUp") { e.preventDefault(); setWheel(st.weight - STEP, true); }
   if (e.key === "ArrowDown") { e.preventDefault(); setWheel(st.weight + STEP, true); }
 });
-$("#minus").onclick = () => setWheel(st.weight - STEP, true);
-$("#plus").onclick = () => setWheel(st.weight + STEP, true);
+$("#minus").onclick = () => setWheel(st.weight - STEP, false);
+$("#plus").onclick = () => setWheel(st.weight + STEP, false);
 
 /* ---------- Exercise sheet ---------- */
 const chips = $("#chips");
