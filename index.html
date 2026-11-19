@@ -371,6 +371,7 @@ label.btn { text-align: center; cursor: pointer; }
           </div>
         </div>
       </div>
+      <div class="details" id="meta">
       <div>
         <label class="lbl" for="name-in">Ejercicio</label>
         <input class="field" id="name-in" maxlength="60" placeholder="Ej: Remo en máquina Hammer" autocomplete="off">
@@ -378,6 +379,7 @@ label.btn { text-align: center; cursor: pointer; }
       <div>
         <span class="lbl" id="group-lbl">Grupo muscular</span>
         <div class="chips" id="chips" role="group" aria-labelledby="group-lbl"></div>
+      </div>
       </div>
     </div>
 
@@ -412,11 +414,13 @@ const CATALOG = [
   ["press-inclinado-mancuernas","Pecho","Press inclinado con mancuernas","pecho inclinado"],
   ["press-banca-smith","Pecho","Press banca en Smith","multipower"],
   ["aperturas-mancuernas","Pecho","Aperturas con mancuernas","flyes"],
+  ["pec-deck","Pecho","Pec deck (mariposa)","peck deck, contractor, aperturas en maquina"],
   ["cruce-poleas","Pecho","Cruce de poleas","crossover, cable"],
   ["fondos-pecho","Pecho","Fondos en paralelas","dips"],
   ["jalon-pecho","Espalda","Jalón al pecho","polea alta, dorsales, lat pulldown"],
   ["jalon-cerrado","Espalda","Jalón agarre cerrado","polea alta, dorsales, triangulo"],
   ["remo-polea-baja","Espalda","Remo en polea baja","remo sentado, gironda"],
+  ["remo-polea-abierto","Espalda","Remo en polea baja agarre abierto","remo sentado, agarre ancho"],
   ["remo-t","Espalda","Remo en T","remo en maquina, t bar"],
   ["remo-barra","Espalda","Remo con barra","remo inclinado"],
   ["remo-mancuerna","Espalda","Remo con mancuerna","serrucho"],
@@ -426,7 +430,9 @@ const CATALOG = [
   ["hiperextensiones","Espalda","Hiperextensiones","lumbares, banco romano"],
   ["press-hombros-mancuernas","Hombros","Press de hombros con mancuernas","press militar"],
   ["press-militar-barra","Hombros","Press militar con barra","press sentado"],
+  ["press-militar-maquina","Hombros","Press militar en máquina","press de hombros, shoulder press"],
   ["elevaciones-laterales","Hombros","Elevaciones laterales","vuelos laterales, deltoides"],
+  ["elevaciones-laterales-polea","Hombros","Elevaciones laterales en polea","vuelos laterales, cable, deltoides"],
   ["elevaciones-frontales","Hombros","Elevaciones frontales","vuelos frontales"],
   ["vuelos-posteriores","Hombros","Vuelos posteriores","deltoides posterior, pajaros"],
   ["encogimientos","Hombros","Encogimientos","trapecios, shrugs"],
@@ -435,12 +441,14 @@ const CATALOG = [
   ["curl-mancuernas","Bíceps","Curl con mancuernas","biceps"],
   ["curl-martillo","Bíceps","Curl martillo","hammer"],
   ["curl-predicador-maquina","Bíceps","Curl predicador en máquina","scott, banco scott"],
+  ["curl-predicador-mancuernas","Bíceps","Curl predicador con mancuernas","scott, banco scott"],
   ["curl-maquina","Bíceps","Curl en máquina","biceps"],
   ["curl-inclinado","Bíceps","Curl inclinado con mancuernas","biceps"],
   ["curl-polea","Bíceps","Curl en polea","biceps, cable"],
   ["triceps-polea","Tríceps","Tríceps en polea","pushdown, barra"],
   ["triceps-soga","Tríceps","Tríceps con soga","pushdown, cuerda"],
   ["triceps-tras-nuca","Tríceps","Extensión de tríceps tras nuca","sobre la cabeza"],
+  ["triceps-tras-nuca-polea","Tríceps","Extensión de tríceps tras nuca en polea","soga, sobre la cabeza, cable"],
   ["press-frances","Tríceps","Press francés","rompecraneos, skull crusher"],
   ["fondos-triceps","Tríceps","Fondos de tríceps","dips"],
   ["triceps-maquina","Tríceps","Extensión de tríceps en máquina","triceps"],
@@ -762,10 +770,12 @@ GROUPS.forEach(g => chips.append(h("button", { class: "chip", "aria-pressed": "f
 function pickGroup(g) { st.group = g; chips.querySelectorAll(".chip").forEach(c => c.setAttribute("aria-pressed", c.dataset.g === g)); }
 
 function setPhotoPreview() {
-  const ex = st.editing;
-  const src = st.photoUrl || (!st.removePhoto && ex ? ex.img : null);
-  $("#photo-prev").replaceWith(Object.assign(photoEl(src, $("#name-in").value), { id: "photo-prev" }));
-  $("#photo-rm").hidden = !src;
+  // Your own photo wins; catalog exercises fall back to their illustration
+  const own = st.photoUrl || (!st.removePhoto && st.editing?.photoData) || null;
+  const src = own || (st.cat ? st.cat.img : null);
+  $("#photo-prev").replaceWith(Object.assign(photoEl(src, st.cat ? st.cat.name : $("#name-in").value, "", !own && !!st.cat), { id: "photo-prev" }));
+  $("#photo-rm").hidden = !own;
+  $("#photo-rm").textContent = st.cat ? "Volver a la ilustración" : "Quitar foto";
 }
 
 // ex: a saved exercise (or null); cat: the catalog entry when adding from the list
@@ -787,7 +797,9 @@ function openSheet(ex, cat) {
   $("#adj-in").value = ex ? (ex.adjust || "") : "";
   pickGroup(ex ? ex.group : (store.get("lastGroup") || GROUPS[0]));
   $("#details").hidden = !custom || !!ex;
-  $("#more").hidden = !custom || !ex;
+  $("#meta").hidden = !custom;
+  $("#more").hidden = !ex;
+  $("#more").textContent = custom ? "Editar foto, nombre y grupo" : "Usar una foto mía";
   $("#del").hidden = !ex;
   $("#confirm").hidden = true; $("#acts").hidden = false;
   $("#err").hidden = true;
@@ -816,7 +828,7 @@ document.addEventListener("keydown", e => {
   if (!$("#picker").hidden) closePicker(); else if (!$("#sheet").hidden) closeSheet();
 });
 $("#more").onclick = () => { $("#details").hidden = false; $("#more").hidden = true; };
-$("#name-in").addEventListener("input", () => { if (!st.photoUrl && !(st.editing?.img && !st.removePhoto)) setPhotoPreview(); });
+$("#name-in").addEventListener("input", () => { if (!st.cat) setPhotoPreview(); });
 $("#photo-in").onchange = e => {
   const f = e.target.files[0];
   e.target.value = "";
@@ -869,10 +881,10 @@ $("#save").onclick = async () => {
     const data = { ...base, adjust: $("#adj-in").value.trim(), weight: w, history: hist.slice(-400), updated: Date.now() };
     if (custom) { data.name = name; data.group = st.group; data.cat = null; }
     else { data.cat = st.cat.id; delete data.name; delete data.group; }
-    if (custom && st.photoFile) {
+    if (st.photoFile) {
       const c = await shrink(st.photoFile, 480);
       data.photoData = c.toDataURL("image/jpeg", .75);
-    } else if (custom && st.removePhoto) {
+    } else if (st.removePhoto) {
       data.photoData = null;
     }
     // Catalog exercises use their catalog id as the key, so each one is added once

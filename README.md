@@ -4,7 +4,7 @@ App web para el celular para anotar el peso y los ajustes de cada máquina del g
 
 **Usala acá:** https://juan-mazzochi.github.io/pesos-gym/
 
-- Elegís tus ejercicios de un catálogo de 62 ilustrados, con buscador y filtro por grupo muscular.
+- Elegís tus ejercicios de un catálogo de 68 ilustrados, con buscador y filtro por grupo muscular.
 - Tocás un ejercicio y elegís el peso con una rueda que va de a 2,5 kg.
 - Cada cambio de peso queda en el historial, y en **Progreso** ves el gráfico por ejercicio.
 - Si un ejercicio no está, podés crear uno propio con tu foto.

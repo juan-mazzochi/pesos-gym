@@ -1,7 +1,9 @@
 // Offline support: the app shell is cached on install; everything else
 // (illustrations, fonts) is cached the first time it loads.
-// Bump VERSION when index.html changes so phones pick up the new version.
-const VERSION = "pesos-v1";
+// The page itself is fetched network-first, so a phone with signal always
+// opens the latest version and falls back to the cached one offline.
+// Bump VERSION to drop old caches.
+const VERSION = "pesos-v2";
 const SHELL = ["./", "index.html", "manifest.webmanifest", "icons/icon.svg", "icons/icon-192.png", "icons/icon-512.png"];
 
 self.addEventListener("install", e => {
@@ -20,6 +22,21 @@ self.addEventListener("fetch", e => {
   const url = new URL(e.request.url);
   const ok = url.origin === location.origin || url.host === "fonts.googleapis.com" || url.host === "fonts.gstatic.com";
   if (!ok) return;
+  if (e.request.mode === "navigate") {
+    e.respondWith(caches.open(VERSION).then(async cache => {
+      try {
+        const res = await Promise.race([
+          fetch(e.request),
+          new Promise((_, rej) => setTimeout(() => rej(new Error("timeout")), 4000))
+        ]);
+        if (res.ok) cache.put("index.html", res.clone());
+        return res;
+      } catch {
+        return (await cache.match("index.html")) || Response.error();
+      }
+    }));
+    return;
+  }
   e.respondWith(caches.open(VERSION).then(async cache => {
     const hit = await cache.match(e.request, { ignoreSearch: true });
     const net = fetch(e.request).then(res => {
