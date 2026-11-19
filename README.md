@@ -24,8 +24,8 @@ No hay cuentas ni servidor: cada persona guarda sus ejercicios y pesos en su pro
 - `index.html`: toda la app (HTML, CSS y JS en un solo archivo).
 - `sw.js`: service worker para que funcione sin conexión. Si cambiás `index.html`, subí el `VERSION` para que los celulares bajen la versión nueva.
 - `manifest.webmanifest` e `icons/`: datos para instalarla como app.
-- `img/`: ilustraciones del catálogo. `img/<id>.svg` es la posición final y `img/<id>-2.svg` muestra las dos posiciones.
+- `img/`: ilustraciones del catálogo. `img/<id>.svg` es la posición final y `img/<id>-2.svg` muestra las dos posiciones. Los ejercicios que tienen foto en `img/sf/<id>.png` usan esa, que ya trae las dos posiciones.
 
 ## Ilustraciones
 
-Las ilustraciones son de [Everkinetic](https://github.com/everkinetic/data), bajo licencia [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/). Están recoloreadas al azul de la app (#181a47) y combinadas en una imagen con las dos posiciones. Las imágenes modificadas de `img/` se comparten bajo la misma licencia.
+Las fotos de `img/sf/` (54 ejercicios) son de [Simply Fitness](https://www.simplyfitness.com/pages/workout-exercise-guides), usadas con permiso de su autor y recortadas para sacarles el margen. Esas fotos conservan los derechos de su autor y no están bajo la licencia de abajo. Las demás ilustraciones son de [Everkinetic](https://github.com/everkinetic/data), bajo licencia [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/). Están recoloreadas al azul de la app (#181a47) y combinadas en una imagen con las dos posiciones. Las imágenes modificadas de Everkinetic en `img/` (los `.svg`) se comparten bajo la misma licencia.

@@ -510,7 +510,7 @@ label.btn { text-align: center; cursor: pointer; }
 
 <script>
 const GROUPS = ["Pecho", "Espalda", "Hombros", "Bíceps", "Tríceps", "Piernas", "Glúteos", "Abdomen", "Otros"];
-// [id, grupo, nombre, alias para el buscador] — ilustración en img/<id>.svg y las dos posiciones en img/<id>-2.svg
+// [id, grupo, nombre, alias para el buscador] — ilustración en img/<id>.svg y las dos posiciones en img/<id>-2.svg (salvo los que tienen foto en img/sf, abajo)
 const CATALOG = [
   ["press-pecho-maquina","Pecho","Press de pecho en máquina","chest press, empuje"],
   ["press-inclinado-smith","Pecho","Press inclinado en Smith","multipower, pecho inclinado"],
@@ -581,6 +581,14 @@ const CATALOG = [
   ["plancha-lateral","Abdomen","Plancha lateral","plank, oblicuos"],
   ["rueda-abdominal","Abdomen","Rueda abdominal","ab rollout, rollo"]
 ].map(([id, group, name, aliases]) => ({ id, group, name, aliases, img: "img/" + id + ".svg", img2: "img/" + id + "-2.svg", illo: true }));
+// Exercises with a Simply Fitness picture (img/sf/<id>.png): it already has both positions, so img and img2 are the same file
+for (const id of ("abdominales abductores-maquina aperturas-mancuernas camilla-femorales cruce-poleas crunch-polea curl-barra curl-barra-z curl-inclinado curl-mancuernas " +
+  "curl-martillo curl-polea dominadas elevacion-piernas elevaciones-frontales elevaciones-laterales elevaciones-laterales-polea encogimientos estocadas femorales-sentado " +
+  "fondos-pecho fondos-triceps gemelos-de-pie gemelos-sentado hack-squat jalon-cerrado jalon-pecho patada-gluteo-polea patada-triceps pec-deck peso-muerto " +
+  "peso-muerto-rumano prensa press-banca-barra press-banca-mancuernas press-frances press-hombros-mancuernas press-inclinado-mancuernas press-inclinado-smith " +
+  "press-militar-barra press-pecho-maquina puente-gluteos pullover-polea remo-barra remo-mancuerna remo-polea-baja remo-t sentadilla-barra sentadilla-una-pierna " +
+  "sillon-cuadriceps triceps-polea triceps-soga triceps-tras-nuca vuelos-posteriores").split(" "))
+  Object.assign(CATALOG.find(c => c.id === id), { img: "img/sf/" + id + ".png", img2: "img/sf/" + id + ".png" });
 const CAT = Object.fromEntries(CATALOG.map(c => [c.id, c]));
 const STEP = 2.5, MAX = 300, ITEM = 44;
 const $ = s => document.querySelector(s);
